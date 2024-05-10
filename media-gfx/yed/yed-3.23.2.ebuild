@@ -2,9 +2,9 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Id$
 
-EAPI="6"
+EAPI="8"
 
-inherit eutils java-pkg-2
+inherit java-pkg-2 desktop
 
 DESCRIPTION="Diagram and graph editor that generates high-quality drawings."
 HOMEPAGE="http://www.yworks.com/en/products_yed_about.html"
@@ -25,7 +25,7 @@ DEPEND="
 pkg_nofetch() {
 	einfo "Please download the ${SRC_URI} from"
 	einfo "${DOWNLOAD_URL}"
-	einfo "and place it in ${DISTDIR}"
+	einfo "and place it in \${DISTDIR}"
 }
 
 src_unpack() {
