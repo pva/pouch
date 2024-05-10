@@ -2,18 +2,18 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Id$
 
-EAPI=6
+EAPI=8
 
-inherit eutils java-vm-2 prefix versionator
+inherit desktop java-vm-2 prefix
 
-MY_PV="$(get_version_component_range 2)u$(get_version_component_range 4)"
-S_PV="$(replace_version_separator 3 '_')"
+MY_PV="$(ver_cut 2)u$(ver_cut 4)"
+S_PV="$(ver_rs 3 '_')"
 
 # This URIs need to be updated when bumping!
 JDK_URI="http://www.oracle.com/technetwork/java/javase/downloads/jdk7-downloads-1880260.html#jdk-${MY_PV}-oth-JPR"
 # This is a list of archs supported by this update.
 AT_AVAILABLE=( amd64 x86 )
-FX_VERSION="2_2_$(get_version_component_range 4)"
+FX_VERSION="2_2_$(ver_cut 4)"
 
 AT_x86="jdk-${MY_PV}-linux-i586.tar.gz"
 AT_amd64="jdk-${MY_PV}-linux-x64.tar.gz"

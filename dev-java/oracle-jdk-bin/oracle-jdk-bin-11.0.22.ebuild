@@ -1,7 +1,7 @@
 # Copyright 1999-2019 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=6
+EAPI=8
 
 inherit desktop gnome2-utils java-vm-2 prefix
 
@@ -109,7 +109,7 @@ src_unpack() {
 
 src_install() {
 	local dest="/opt/${P}"
-	local ddest="${ED}${dest#/}"
+	local ddest="${ED}/${dest#/}"
 
 	# Create files used as storage for system preferences.
 	mkdir .systemPrefs || die

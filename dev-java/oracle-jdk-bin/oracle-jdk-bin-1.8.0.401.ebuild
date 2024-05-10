@@ -1,20 +1,20 @@
 # Copyright 1999-2020 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=6
+EAPI=8
 
-inherit desktop eutils gnome2-utils java-vm-2 prefix versionator
+inherit desktop gnome2-utils java-vm-2 prefix
 
 KEYWORDS="-* ~amd64"
 
-if [[ "$(get_version_component_range 4)" == 0 ]] ; then
-	S_PV="$(get_version_component_range 1-3)"
+if [[ "$(ver_cut 4)" == 0 ]] ; then
+	S_PV="$(ver_cut 1-3)"
 else
-	MY_PV_EXT="u$(get_version_component_range 4)"
-	S_PV="$(get_version_component_range 1-4)"
+	MY_PV_EXT="u$(ver_cut 4)"
+	S_PV="$(ver_cut 1-4)"
 fi
 
-MY_PV="$(get_version_component_range 2)${MY_PV_EXT}"
+MY_PV="$(ver_cut 2)${MY_PV_EXT}"
 
 declare -A ARCH_FILES
 ARCH_FILES[amd64]="jdk-${MY_PV}-linux-x64.tar.gz"
@@ -80,7 +80,7 @@ RDEPEND="
 
 DEPEND="app-arch/zip"
 
-S="${WORKDIR}/jdk$(replace_version_separator 3 _  ${S_PV})"
+S="${WORKDIR}/jdk$(ver_rs 3 _  ${S_PV})"
 
 pkg_nofetch() {
 	local a
@@ -120,7 +120,7 @@ src_prepare() {
 
 src_install() {
 	local dest="/opt/${P}"
-	local ddest="${ED}${dest#/}"
+	local ddest="${ED}/${dest#/}"
 
 	# Create files used as storage for system preferences.
 	mkdir jre/.systemPrefs || die
@@ -162,6 +162,7 @@ src_install() {
 	# Install desktop file for the Java Control Panel. Using
 	# ${PN}-${SLOT} to prevent file collision with JRE and other slots.
 	if [[ -d jre/lib/desktop/icons ]] ; then
+		einfo "Install desktop file"
 		local icon
 		pushd jre/lib/desktop/icons >/dev/null || die
 		for icon in */*/apps/sun-jcontrol.png ; do
@@ -177,6 +178,7 @@ src_install() {
 	fi
 
 	dodoc COPYRIGHT
+	einfo "${dest} and ${ddest}"
 	dodir "${dest}"
 	cp -pPR bin include jre lib man "${ddest}" || die
 
