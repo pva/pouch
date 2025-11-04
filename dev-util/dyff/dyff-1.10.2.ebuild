@@ -6,8 +6,8 @@ inherit go-module
 
 DESCRIPTION="diff tool for YAML files, and sometimes JSON"
 HOMEPAGE="https://github.com/homeport/dyff"
-SRC_URI="https://github.com/homeport/dyff/archive/refs/tags/v${PV}.tar.gz -> ${P}.tar.gz"
-SRC_URI+=" https://pva.github.io/${P}-deps.tar.xz"
+SRC_URI="https://github.com/homeport/dyff/archive/refs/tags/v${PV}.tar.gz -> ${P}.tar.gz
+	https://github.com/pva/pva.github.io/releases/download/v1.0/${P}-deps.tar.xz"
 
 LICENSE="MIT"
 SLOT="0"
