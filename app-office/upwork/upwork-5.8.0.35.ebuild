@@ -53,7 +53,7 @@ src_install() {
 
 	insinto /opt
 	doins -r opt/Upwork
-	fperms 0755 /opt/Upwork/upwork
+	fperms 0755 /opt/Upwork/upwork /opt/Upwork/chrome_crashpad_handler
 
 	insinto /usr/share
 	doins -r usr/share/icons
