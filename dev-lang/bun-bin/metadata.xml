@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<longdescription>
+		Bun is a JavaScript and TypeScript runtime, package manager, test runner,
+		and bundler. This package installs an official prebuilt executable.
+	</longdescription>
+	<upstream>
+		<doc>https://bun.com/docs</doc>
+		<remote-id type="github">oven-sh/bun</remote-id>
+	</upstream>
+</pkgmetadata>
