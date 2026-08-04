@@ -14,8 +14,7 @@ HOMEPAGE="https://github.com/Juniper/py-junos-eznc"
 
 LICENSE="Apache-2.0"
 SLOT="0"
-KEYWORDS="~amd64 ~x86"
-IUSE=""
+KEYWORDS="~amd64"
 
 DEPEND=">=dev-python/lxml-3.2.4[${PYTHON_USEDEP}]
 	>=dev-python/ncclient-0.6.15[${PYTHON_USEDEP}]

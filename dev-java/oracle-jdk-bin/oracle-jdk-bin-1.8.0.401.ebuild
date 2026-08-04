@@ -3,9 +3,7 @@
 
 EAPI=8
 
-inherit desktop gnome2-utils java-vm-2 prefix
-
-KEYWORDS="-* ~amd64"
+inherit desktop java-vm-2 pax-utils prefix xdg-utils
 
 if [[ "$(ver_cut 4)" == 0 ]] ; then
 	S_PV="$(ver_cut 1-3)"
@@ -16,26 +14,20 @@ fi
 
 MY_PV="$(ver_cut 2)${MY_PV_EXT}"
 
-declare -A ARCH_FILES
-ARCH_FILES[amd64]="jdk-${MY_PV}-linux-x64.tar.gz"
-
-for keyword in ${KEYWORDS//-\*} ; do
-	case "${keyword#\~}" in
-		*-linux) continue ;;
-	esac
-
-	SRC_URI+="
-		${keyword#\~}? (
-			${ARCH_FILES[${keyword#\~}]}
-		)"
-done
-
 DESCRIPTION="Oracle's Java SE Development Kit"
 HOMEPAGE="http://www.oracle.com/technetwork/java/javase/"
+SRC_URI="amd64? ( jdk-${MY_PV}-linux-x64.tar.gz )"
+
+S="${WORKDIR}/jdk$(ver_rs 3 _ ${S_PV})"
+
 LICENSE="OTN examples? ( BSD )"
 SLOT="1.8"
-IUSE="alsa commercial cups doc examples +fontconfig headless-awt javafx jce selinux source visualvm"
-REQUIRED_USE="javafx? ( alsa fontconfig )"
+KEYWORDS="-* ~amd64"
+IUSE="alsa commercial cups examples +fontconfig headless-awt javafx jce selinux source visualvm"
+REQUIRED_USE="
+	elibc_glibc
+	javafx? ( alsa fontconfig )
+"
 RESTRICT="bindist fetch preserve-libs strip"
 QA_PREBUILT="*"
 
@@ -73,21 +65,17 @@ RDEPEND="
 		)
 	alsa? ( media-libs/alsa-lib )
 	cups? ( net-print/cups )
-	doc? ( dev-java/java-sdk-docs:${SLOT} )
 	fontconfig? ( media-libs/fontconfig:1.0 )
-	!prefix? ( sys-libs/glibc:* )
 	selinux? ( sec-policy/selinux-java )"
 
 DEPEND="app-arch/zip"
-
-S="${WORKDIR}/jdk$(ver_rs 3 _  ${S_PV})"
 
 pkg_nofetch() {
 	local a
 	einfo "Please download these files and move them to your distfiles directory:"
 	einfo
 	for a in ${A} ; do
-		[[ ! -f ${DISTDIR}/${a} ]] && einfo "  ${a}"
+		einfo "  ${a}"
 	done
 	einfo
 	einfo "  http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html"
@@ -108,7 +96,7 @@ src_prepare() {
 
 		eqawarn "Ensure that this only calls trackJavaUsage(). If not, see bug #559936."
 		eqawarn
-		eqawarn "$(./bin/javap -J-Duser.home=${T} -c sun.misc.PostVMInitHook || die)"
+		eqawarn "$(./bin/javap "-J-Duser.home=${T}" -c sun.misc.PostVMInitHook || die)"
 	fi
 
 	# Remove the hook that calls Oracle's evil usage tracker. Not just
@@ -215,12 +203,8 @@ src_install() {
 	java-vm_sandbox-predict /dev/random /proc/self/coredump_filter
 }
 
-pkg_preinst() {
-	gnome2_icon_savelist
-}
-
 pkg_postinst() {
-	gnome2_icon_cache_update
+	xdg_icon_cache_update
 	java-vm-2_pkg_postinst
 
 	if ! use headless-awt && ! use javafx ; then
@@ -230,6 +214,6 @@ pkg_postinst() {
 }
 
 pkg_postrm() {
-	gnome2_icon_cache_update
+	xdg_icon_cache_update
 	java-vm-2_pkg_postrm
 }

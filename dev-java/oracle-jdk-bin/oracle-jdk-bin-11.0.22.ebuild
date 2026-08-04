@@ -3,26 +3,22 @@
 
 EAPI=8
 
-inherit desktop gnome2-utils java-vm-2 prefix
-
-KEYWORDS="-* ~amd64 ~x64-macos ~sparc64-solaris"
-KEYWORDS="-* ~amd64"
-
-declare -A ARCH_FILES
-ARCH_FILES[amd64]="jdk-${PV}_linux-x64_bin.tar.gz"
-ARCH_FILES[sparc64-solaris]="jdk-${PV}_solaris-sparcv9_bin.tar.gz"
-ARCH_FILES[x64-macos]="jdk-${PV}_osx-x64_bin.dmg"
-
-for keyword in ${KEYWORDS//-\*} ; do
-	SRC_URI+=" ${keyword#\~}? ( ${ARCH_FILES[${keyword#\~}]} )"
-done
+inherit desktop java-vm-2 prefix xdg-utils
 
 DESCRIPTION="Oracle's Java SE Development Kit"
 HOMEPAGE="http://www.oracle.com/technetwork/java/javase/"
+SRC_URI="amd64? ( jdk-${PV}_linux-x64_bin.tar.gz )"
+
+S="${WORKDIR}/jdk-${PV}"
+
 LICENSE="OTN"
 SLOT="${PV%%.*}"
-IUSE="alsa commercial cups doc +fontconfig +gentoo-vm gtk2 gtk3 headless-awt javafx nsplugin selinux source"
-REQUIRED_USE="javafx? ( alsa fontconfig ^^ ( gtk2 gtk3 ) )"
+KEYWORDS="-* ~amd64"
+IUSE="alsa commercial cups +fontconfig +gentoo-vm gtk2 gtk3 headless-awt javafx nsplugin selinux source"
+REQUIRED_USE="
+	elibc_glibc
+	javafx? ( alsa fontconfig ^^ ( gtk2 gtk3 ) )
+"
 RESTRICT="bindist fetch preserve-libs strip"
 QA_PREBUILT="*"
 
@@ -37,49 +33,46 @@ QA_PREBUILT="*"
 #   under MacOS. It doesn't appear to use many, if any, of the
 #   dependencies below.
 #
-RDEPEND="!x64-macos? (
-		!headless-awt? (
-			x11-libs/libX11
-			x11-libs/libXext
-			x11-libs/libXi
-			x11-libs/libXrender
-			x11-libs/libXtst
-		)
-		javafx? (
-			dev-libs/atk
-			dev-libs/glib:2
-			dev-libs/libxml2:2
-			dev-libs/libxslt
-			media-libs/freetype:2
-			x11-libs/gdk-pixbuf
-			x11-libs/libX11
-			x11-libs/libXtst
-			x11-libs/libXxf86vm
-			x11-libs/pango
-			virtual/opengl
+RDEPEND="
+	!headless-awt? (
+		x11-libs/libX11
+		x11-libs/libXext
+		x11-libs/libXi
+		x11-libs/libXrender
+		x11-libs/libXtst
+	)
+	javafx? (
+		>=app-accessibility/at-spi2-core-2.46.0
+		dev-libs/glib:2
+		dev-libs/libxml2:2
+		dev-libs/libxslt
+		media-libs/freetype:2
+		x11-libs/gdk-pixbuf
+		x11-libs/libX11
+		x11-libs/libXtst
+		x11-libs/libXxf86vm
+		x11-libs/pango
+		virtual/opengl
 
-			gtk2? (
-				x11-libs/cairo
-				x11-libs/gtk+:2
-			)
-			gtk3? (
-				x11-libs/cairo[glib]
-				x11-libs/gtk+:3
-			)
+		gtk2? (
+			x11-libs/cairo
+			x11-libs/gtk+:2
+		)
+		gtk3? (
+			x11-libs/cairo[glib]
+			x11-libs/gtk+:3
 		)
 	)
 	!prefix? (
 		dev-libs/elfutils
-		sys-libs/glibc:*
 	)
 	alsa? ( media-libs/alsa-lib )
 	cups? ( net-print/cups )
-	doc? ( dev-java/java-sdk-docs:${SLOT} )
 	fontconfig? ( media-libs/fontconfig:1.0 )
 	selinux? ( sec-policy/selinux-java )"
 
 pkg_nofetch() {
-	einfo "Please download ${ARCH_FILES[${ARCH}]} and move it to"
+	einfo "Please download jdk-${PV}_linux-x64_bin.tar.gz and move it to"
 	einfo "your distfiles directory:"
 	einfo
 	einfo "  https://www.oracle.com/technetwork/java/javase/downloads/jdk11-downloads-5066655.html"
@@ -89,22 +82,6 @@ pkg_nofetch() {
 	einfo
 	einfo "  https://www.oracle.com/technetwork/java/javase/downloads/java-archive-javase11-5116896.html"
 	einfo
-}
-
-src_unpack() {
-	if use x64-macos ; then
-		S="${WORKDIR}/Contents/Home"
-		mkdir -p "${T}"/dmgmount || die
-		hdiutil attach "${DISTDIR}/${A}" -mountpoint "${T}"/dmgmount || die
-		( cd "${T}" &&
-		  xar -xf "${T}/dmgmount/JDK ${PV}.pkg" \
-		  jdk${PV//.}.pkg/Payload ) || die
-		zcat "${T}"/jdk${PV//.}.pkg/Payload | cpio -idv || die
-		hdiutil detach "${T}"/dmgmount || die
-	else
-		S="${WORKDIR}/jdk-${PV}"
-		default
-	fi
 }
 
 src_install() {
@@ -200,28 +177,13 @@ src_install() {
 	# Remove empty dirs we might have copied.
 	find "${D}" -type d -empty -exec rmdir -v {} + || die
 
-	if use x64-macos ; then
-		local lib
-		for lib in lib{decora_sse,glass,prism_{common,es2,sw}}.dylib ; do
-			ebegin "Fixing self-reference of ${lib}"
-			install_name_tool \
-				-id "${EPREFIX}${dest}"/lib/${lib} \
-				"${ddest}"/lib/${lib} || die
-			eend $?
-		done
-	fi
-
 	use gentoo-vm && java-vm_install-env "${FILESDIR}"/${PN}-9.env.sh
 	java-vm_revdep-mask
 	java-vm_sandbox-predict /dev/random /proc/self/coredump_filter
 }
 
-pkg_preinst() {
-	gnome2_icon_savelist
-}
-
 pkg_postinst() {
-	gnome2_icon_cache_update
+	xdg_icon_cache_update
 	java-vm-2_pkg_postinst
 
 	if ! use headless-awt && ! use javafx ; then
@@ -242,6 +204,6 @@ pkg_postinst() {
 }
 
 pkg_postrm() {
-	gnome2_icon_cache_update
+	xdg_icon_cache_update
 	java-vm-2_pkg_postrm
 }

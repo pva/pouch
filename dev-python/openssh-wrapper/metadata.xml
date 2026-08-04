@@ -6,7 +6,7 @@
     <name>Andreas Billmeier</name>
   </maintainer>
   <upstream>
-    <remote-id type="pypi">proxmoxer</remote-id>
+    <remote-id type="pypi">openssh-wrapper</remote-id>
     <maintainer status="unknown">
       <email>obutovich@gmail.com</email>
       <name>Oleg Butovich</name>

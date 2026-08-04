@@ -26,8 +26,9 @@ BDEPEND="
 		dev-python/pytest[${PYTHON_USEDEP}]
 		dev-python/responses[${PYTHON_USEDEP}]
 		dev-python/openssh-wrapper[${PYTHON_USEDEP}]
-	)"
+		)"
 
+EPYTEST_PLUGINS=()
 distutils_enable_tests pytest
 
 pkg_postinst() {

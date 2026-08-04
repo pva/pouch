@@ -6,10 +6,11 @@ EAPI=8
 inherit cmake git-r3
 
 DESCRIPTION="Switch your X keyboard layouts from the command line"
-HOMEPAGE="https://github.com/ierton/xkb-switch"
-EGIT_REPO_URI="https://github.com/ierton/xkb-switch"
+HOMEPAGE="https://github.com/sergei-mironov/xkb-switch"
+EGIT_REPO_URI="https://github.com/sergei-mironov/xkb-switch"
 
-LICENSE="GPL-3"
+LICENSE="MIT"
+KEYWORDS="~amd64"
 SLOT="0"
 
 DEPEND="x11-libs/libxkbfile"

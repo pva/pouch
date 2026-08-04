@@ -6,16 +6,15 @@ EAPI="8"
 
 inherit java-pkg-2 desktop
 
-DESCRIPTION="Diagram and graph editor that generates high-quality drawings."
+DESCRIPTION="Diagram and graph editor that generates high-quality drawings"
 HOMEPAGE="http://www.yworks.com/en/products_yed_about.html"
 SRC_URI="yEd-${PV}.zip"
 MY_JAR="${P}.jar"
 DOWNLOAD_URL="http://www.yworks.com/en/products_download.php?file=${SRC_URI}"
-LICENSE="yEd"
+LICENSE="all-rights-reserved"
 SLOT="0"
 KEYWORDS="~amd64 ~x86"
-IUSE=""
-RESTRICT="fetch"
+RESTRICT="bindist fetch mirror"
 
 RDEPEND=">=virtual/jre-1.8"
 DEPEND="

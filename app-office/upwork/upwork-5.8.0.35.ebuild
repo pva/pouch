@@ -8,8 +8,10 @@ inherit desktop pax-utils xdg-utils unpacker
 DESCRIPTION="Project collaboration and tracking software for upwork.com"
 HOMEPAGE="https://www.upwork.com/"
 SRC_URI="
-	amd64? ( https://upwork-usw2-desktopapp.upwork.com/binaries/v5_8_0_35_be1a1520901c4eef/upwork_5.8.0.35_amd64.deb )
+	amd64? ( https://upwork-usw2-desktopapp.upwork.com/binaries/v${PV//./_}_be1a1520901c4eef/upwork_${PV}_amd64.deb )
 "
+
+S="${WORKDIR}"
 
 LICENSE="ODESK"
 SLOT="0"
@@ -24,8 +26,6 @@ RDEPEND="
 	sys-apps/dbus
 	x11-libs/gtk+:3[cups]
 "
-
-S="${WORKDIR}"
 
 PATCHES=( "${FILESDIR}/${PN}-desktop-r2.patch" )
 

@@ -11,7 +11,6 @@ EGIT_REPO_URI="https://github.com/intel/usbio-drivers.git"
 
 LICENSE="GPL-2"
 SLOT="0/$(ver_cut 1-2)"
-KEYWORDS="~amd64"
 
 src_compile() {
 	local modlist=( {gpio-usbio,i2c-usbio,usbio}=usb/drivers )

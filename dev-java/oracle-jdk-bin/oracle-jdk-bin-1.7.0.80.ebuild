@@ -27,12 +27,14 @@ for d in "${AT_AVAILABLE[@]}"; do
 done
 unset d
 
-LICENSE="Oracle-BCLA-JavaSE examples? ( BSD )"
+S="${WORKDIR}/jdk${S_PV}"
+
+LICENSE="all-rights-reserved examples? ( BSD )"
 SLOT="1.7"
 KEYWORDS="~amd64 ~x86"
-IUSE="+X alsa aqua derby doc examples +fontconfig pax_kernel selinux source"
+IUSE="+X alsa aqua derby examples +fontconfig selinux source"
 
-RESTRICT="fetch strip"
+RESTRICT="bindist fetch mirror strip"
 QA_PREBUILT="*"
 
 COMMON_DEP=""
@@ -45,16 +47,10 @@ RDEPEND="${COMMON_DEP}
 		x11-libs/libXtst
 	) )
 	alsa? ( media-libs/alsa-lib )
-	doc? ( dev-java/java-sdk-docs:1.7 )
 	fontconfig? ( media-libs/fontconfig )
 	selinux? ( sec-policy/selinux-java )"
-# scanelf won't create a PaX header, so depend on paxctl to avoid fallback
-# marking. #427642
 DEPEND="${COMMON_DEP}
-	examples? ( kernel_linux? ( app-arch/unzip ) )
-	pax_kernel? ( sys-apps/paxctl )"
-
-S="${WORKDIR}"/jdk${S_PV}
+	examples? ( kernel_linux? ( app-arch/unzip ) )"
 
 check_tarballs_available() {
 	local uri=$1; shift

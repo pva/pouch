@@ -10,8 +10,8 @@ HOMEPAGE="https://github.com/intel/ipu6-drivers"
 EGIT_REPO_URI="https://github.com/intel/ipu6-drivers.git"
 
 LICENSE="GPL-2"
-SLOT="0/$(ver_cut 1-2)"
 KEYWORDS="~amd64"
+SLOT="0/$(ver_cut 1-2)"
 
 RDEPEND="sys-kernel/usbio-drivers"
 DEPEND="${RDEPEND}"
@@ -22,7 +22,13 @@ CONFIG_CHECK+=" ~MFD_LJCA ~I2C_LJCA ~SPI_LJCA ~GPIO_LJCA"
 CONFIG_CHECK+=" ~INTEL_VSC ~INTEL_VSC_CSI ~INTEL_VSC_ACE ~INTEL_VSC_PSE"
 
 src_compile() {
-	local modlist=( drivers/media/{i2c/{ov02c10,ov02e10,ov01a10,hm11b1,hi556,hm2172,ov01a1s,hm2170,ov05c10,ov2740},pci/intel/ipu6/psys/intel-ipu6-psys}=ipu6 )
-	local modargs=( KERNEL_SRC="${KV_OUT_DIR}" KERNELRELEASE="${KV_FULL}" EXTRA_CFLAGS="-I${KV_OUT_DIR}/drivers/media/pci/intel/ipu6/" )
+	local modlist=(
+		drivers/media/{i2c/{ov02c10,ov02e10,ov01a10,hm11b1,hi556,hm2172,ov01a1s,hm2170,ov05c10,ov2740},pci/intel/ipu6/psys/intel-ipu6-psys}=ipu6
+	)
+	local modargs=(
+		KERNEL_SRC="${KV_OUT_DIR}"
+		KERNELRELEASE="${KV_FULL}"
+		EXTRA_CFLAGS="-I${KV_OUT_DIR}/drivers/media/pci/intel/ipu6/"
+	)
 	linux-mod-r1_src_compile
 }

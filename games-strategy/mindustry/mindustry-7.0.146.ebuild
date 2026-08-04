@@ -11,6 +11,8 @@ DESCRIPTION="Sandbox tower defense game"
 HOMEPAGE="https://mindustrygame.github.io/"
 SRC_URI="https://github.com/Anuken/Mindustry/releases/download/v${BUILDVER}/Mindustry.jar -> ${P}.jar"
 
+S="${WORKDIR}"
+
 LICENSE="GPL-3"
 SLOT="0"
 KEYWORDS="~amd64 ~x86"
@@ -21,8 +23,6 @@ RDEPEND="
 		>=virtual/jdk-1.8
 	)
 "
-
-S="${WORKDIR}"
 
 src_unpack() {
 	# Don't unpack that jar, just copy it to WORKDIR
