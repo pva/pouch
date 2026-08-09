@@ -1,0 +1,48 @@
+# Configuration for app-misc/mqtt-exporter.
+# Values shown below are the upstream defaults. Uncomment settings to override them.
+
+# Logging level and optional raw MQTT message logging.
+#LOG_LEVEL="INFO"
+#LOG_MQTT_MESSAGE="False"
+
+# MQTT broker and subscription settings.
+#MQTT_ADDRESS="127.0.0.1"
+#MQTT_PORT="1883"
+#MQTT_TOPIC="#"
+#MQTT_IGNORED_TOPICS=""
+#MQTT_KEEPALIVE="60"
+#MQTT_USERNAME=""
+#MQTT_PASSWORD=""
+#MQTT_PASSWORD_FILE=""
+#MQTT_V5_PROTOCOL="False"
+#MQTT_CLIENT_ID=""
+#MQTT_EXPOSE_CLIENT_ID="False"
+
+# MQTT TLS settings.
+#MQTT_ENABLE_TLS="False"
+#MQTT_TLS_NO_VERIFY="False"
+#MQTT_TLS_CA_CERT=""
+#MQTT_TLS_CLIENT_CERT=""
+#MQTT_TLS_CLIENT_KEY=""
+
+# Prometheus listener and metric settings.
+#PROMETHEUS_ADDRESS="0.0.0.0"
+#PROMETHEUS_PORT="9000"
+#PROMETHEUS_PREFIX="mqtt_"
+#PROMETHEUS_CERT=""
+#PROMETHEUS_CERT_KEY=""
+#PROMETHEUS_CA=""
+#PROMETHEUS_CA_DIR=""
+#TOPIC_LABEL="topic"
+#MAX_METRICS="2000"
+#EXPOSE_LAST_SEEN="False"
+#PARSE_MSG_PAYLOAD="True"
+#STATE_VALUES=""
+
+# Topic normalization settings.
+#KEEP_FULL_TOPIC="False"
+#ZIGBEE2MQTT_AVAILABILITY="False"
+#ZWAVE_TOPIC_PREFIX="zwave/"
+#MESHTASTIC_TOPIC_PREFIX="msh/"
+#ESPHOME_TOPIC_PREFIXES=""
+#HUBITAT_TOPIC_PREFIXES="hubitat/"

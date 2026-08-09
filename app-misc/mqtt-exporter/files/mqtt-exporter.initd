@@ -1,0 +1,36 @@
+#!/sbin/openrc-run
+# Copyright 2016-2026 Gentoo Authors
+# Distributed under the terms of the GNU General Public License v2
+
+description="Simple and generic Prometheus exporter for MQTT"
+
+command="/usr/bin/mqtt-exporter"
+command_user="mqtt-exporter:mqtt-exporter"
+command_background="true"
+pidfile="/run/${RC_SVCNAME}.pid"
+error_log="/var/log/${RC_SVCNAME}/${RC_SVCNAME}_error.log"
+output_log="/var/log/${RC_SVCNAME}/${RC_SVCNAME}.log"
+
+start_pre() {
+	local variable
+	for variable in \
+		ESPHOME_TOPIC_PREFIXES EXPOSE_LAST_SEEN HUBITAT_TOPIC_PREFIXES \
+		KEEP_FULL_TOPIC LOG_LEVEL LOG_MQTT_MESSAGE MAX_METRICS \
+		MESHTASTIC_TOPIC_PREFIX MQTT_ADDRESS MQTT_CLIENT_ID \
+		MQTT_ENABLE_TLS MQTT_EXPOSE_CLIENT_ID MQTT_IGNORED_TOPICS \
+		MQTT_KEEPALIVE MQTT_PASSWORD MQTT_PASSWORD_FILE MQTT_PORT \
+		MQTT_TLS_CA_CERT MQTT_TLS_CLIENT_CERT MQTT_TLS_CLIENT_KEY \
+		MQTT_TLS_NO_VERIFY MQTT_TOPIC MQTT_USERNAME MQTT_V5_PROTOCOL \
+		PARSE_MSG_PAYLOAD PROMETHEUS_ADDRESS PROMETHEUS_CA \
+		PROMETHEUS_CA_DIR PROMETHEUS_CERT PROMETHEUS_CERT_KEY \
+		PROMETHEUS_PORT PROMETHEUS_PREFIX STATE_VALUES TOPIC_LABEL \
+		ZIGBEE2MQTT_AVAILABILITY ZWAVE_TOPIC_PREFIX
+	do
+		eval "[ -z \"\${${variable}+x}\" ] || export ${variable}"
+	done
+}
+
+depend() {
+	need net
+	after mosquitto prometheus zigbee2mqtt
+}

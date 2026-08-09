@@ -1,0 +1,14 @@
+[Unit]
+Description=MQTT exporter
+Wants=network-online.target
+After=network-online.target mosquitto.service prometheus.service zigbee2mqtt.service
+
+[Service]
+Type=simple
+User=mqtt-exporter
+Group=mqtt-exporter
+ExecStart=/usr/bin/mqtt-exporter
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

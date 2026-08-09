@@ -1,0 +1,26 @@
+diff --git a/pyproject.toml b/pyproject.toml
+index 596bae3..0b1a642 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,9 +1,13 @@
++[build-system]
++requires = ["setuptools", "wheel"]
++build-backend = "setuptools.build_meta"
++
+ [project]
+ name = "mqtt-exporter"
+ version = "1.11.2"
+ description = "Simple generic MQTT Prometheus exporter for IoT working out of the box"
+ readme = "README.md"
+-license = { text = "MIT License" }
++license = "MIT"
+ authors = [
+     { name = "Kevin Petremann", email = "kpetrem@gmail.com" },
+ ]
+@@ -11,6 +15,5 @@ keywords = ["iot", "mqtt", "prometheus"]
+ classifiers = [
+   "Development Status :: 5 - Production/Stable",
+-  "License :: OSI Approved :: MIT License",
+   "Programming Language :: Python :: 3",
+   "Programming Language :: Python :: 3.10",
+   "Programming Language :: Python :: 3.11",
