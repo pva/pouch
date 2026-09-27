@@ -1,0 +1,32 @@
+Control the IPA signature verification backend selected by USE=openssl.
+
+--- a/meson_options.txt
++++ b/meson_options.txt
+@@ -40,6 +40,11 @@
+         type : 'boolean',
+         value : false,
+         description : 'Treat documentation warnings as errors')
++
++option('gnutls',
++        type : 'feature',
++        value : 'auto',
++        description : 'Verify IPA signatures with GnuTLS instead of OpenSSL')
+ 
+ option('gstreamer',
+         type : 'feature',
+--- a/src/libcamera/meson.build
++++ b/src/libcamera/meson.build
+@@ -88,11 +88,11 @@
+ ])
+ 
+ # Use one of gnutls or libcrypto (provided by OpenSSL), trying gnutls first.
+-libcrypto = dependency('gnutls', required : false)
++libcrypto = dependency('gnutls', required : get_option('gnutls'))
+ if libcrypto.found()
+     config_h.set('HAVE_GNUTLS', 1)
+ else
+-    libcrypto = dependency('libcrypto', required : false)
++    libcrypto = dependency('libcrypto', required : true)
+     if libcrypto.found()
+         config_h.set('HAVE_CRYPTO', 1)
+     endif
