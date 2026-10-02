@@ -21,6 +21,11 @@ SLOT="0"
 
 IUSE="examples"
 
+PATCHES=(
+	# https://github.com/v4l2loopback/v4l2loopback/pull/656
+	"${FILESDIR}/${P}-output-dqbuf.patch"
+)
+
 pkg_setup() {
 	local CONFIG_CHECK="VIDEO_DEV"
 
