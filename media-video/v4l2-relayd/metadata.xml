@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<!-- maintainer-needed -->
+	<use>
+		<flag name="libcamera">Install the GStreamer source plugin from <pkg>media-libs/libcamera</pkg> for camera input</flag>
+	</use>
+	<upstream>
+		<remote-id type="gitlab">vicamo/v4l2-relayd</remote-id>
+	</upstream>
+</pkgmetadata>

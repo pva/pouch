@@ -1,0 +1,21 @@
+This package installs Intel's libcamhal and the ipu6, ipu6ep and ipu6epmtl
+plugins. The adaptor selects the plugin from the IPU PCI device ID; Raptor
+Lake uses ipu6ep. Camera configuration is installed under /etc/camera/.
+
+This is a separate camera stack from libcamera. Installing it does not make
+libcamera's simple pipeline use the IPU6 PSYS hardware, and does not change
+an existing v4l2-relayd configuration using libcamerasrc.
+
+Runtime requirements:
+- A compatible Intel IPU6 PSYS kernel driver, in addition to ISYS and the
+  camera sensor driver. The existing sys-kernel/ipu6-drivers package can
+  provide the out-of-tree PSYS driver, subject to kernel compatibility.
+- IPU6 firmware, provided by sys-kernel/linux-firmware. The camera-bins
+  dependency installs userspace libraries and headers, not firmware.
+- Sensor/module configuration supported by Intel's HAL.
+
+For GStreamer, Intel's icamerasrc plugin (icamerasrc_slim_api branch) must
+be packaged and installed separately. It uses libcamhal, whereas
+libcamerasrc uses libcamera. Test the new stack before switching a working
+v4l2-relayd service to icamerasrc; do not use both stacks on the same camera
+at the same time.

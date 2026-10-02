@@ -1,0 +1,51 @@
+v4l2-relayd provides a GStreamer-to-v4l2loopback bridge. The packaged service
+integration uses systemd. Installation does not start or enable the service.
+
+The default settings are in /etc/default/v4l2-relayd. Version 0.2.0 uses
+instances configured in /etc/v4l2-relayd.d/*.conf. Start with one instance:
+
+    cp /etc/default/v4l2-relayd /etc/v4l2-relayd.d/camera.conf
+
+The default VIDEOSRC="videotestsrc" produces a test pattern. To use libcamera,
+build this package with USE=libcamera and change the instance configuration to:
+
+    VIDEOSRC="libcamerasrc ! videoconvert"
+
+For a USB camera, use its actual capture device (not the loopback output):
+
+    VIDEOSRC="v4l2src device=/dev/video0 ! videoconvert"
+
+Choose FORMAT, WIDTH, HEIGHT and FRAMERATE supported by the source camera.
+Additional GStreamer plugins may be needed for custom pipelines, for example
+JPEG decoding. USE=libcamera only installs the input plugin; it does not change
+VIDEOSRC or guarantee support for a particular camera.
+
+The packaged /etc/modprobe.d/v4l2-relayd.conf configures v4l2loopback with
+exclusive_caps=1 and card_label="Virtual Camera". CARD_LABEL in the instance
+configuration must match this label. The modules-load.d file loads the module
+at boot. If it is not loaded yet, load it manually with:
+
+    modprobe v4l2loopback
+
+If the module is already loaded, changing modprobe.d does not reconfigure it.
+Use your existing loopback device's label or reboot after editing the options.
+For multiple instances, create separate loopback devices with distinct labels
+and give each instance its corresponding CARD_LABEL.
+
+After creating or removing instance files, regenerate systemd dependencies:
+
+    systemctl daemon-reload
+    systemctl enable --now v4l2-relayd.service
+
+If the parent service was already running, restart it after daemon-reload.
+Inspect the camera instance with:
+
+    systemctl status v4l2-relayd@camera.service
+    journalctl -u v4l2-relayd@camera.service
+
+Open the virtual camera in a V4L2 application. The daemon uses v4l2loopback
+client-usage events to activate the input camera when a consumer connects.
+
+On systems without systemd, the executable can be started directly with the
+input and output pipeline options shown in the upstream README.md. No OpenRC
+init script is included.
