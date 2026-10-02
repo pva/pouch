@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<!-- maintainer-needed -->
+	<use>
+		<flag name="vaapi">Enable DRM DMA-buf output via the GstVa library from <pkg>media-libs/gst-plugins-bad</pkg></flag>
+	</use>
+	<upstream>
+		<remote-id type="github">intel/icamerasrc</remote-id>
+	</upstream>
+</pkgmetadata>
