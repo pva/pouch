@@ -14,8 +14,7 @@ Runtime requirements:
   dependency installs userspace libraries and headers, not firmware.
 - Sensor/module configuration supported by Intel's HAL.
 
-For GStreamer, Intel's icamerasrc plugin (icamerasrc_slim_api branch) must
-be packaged and installed separately. It uses libcamhal, whereas
-libcamerasrc uses libcamera. Test the new stack before switching a working
-v4l2-relayd service to icamerasrc; do not use both stacks on the same camera
-at the same time.
+For GStreamer, Intel's icamerasrc plugin (icamerasrc_slim_api branch) must be
+installed separately. It uses libcamhal, whereas libcamerasrc uses libcamera.
+Test the new stack before switching a working v4l2-relayd service to
+icamerasrc; do not use both stacks on the same camera at the same time.

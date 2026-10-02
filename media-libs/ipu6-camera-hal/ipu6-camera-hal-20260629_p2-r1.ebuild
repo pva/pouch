@@ -3,7 +3,7 @@
 
 EAPI=8
 
-inherit cmake
+inherit cmake udev
 
 MY_PV=${PV/_p/_}
 DESCRIPTION="Intel IPU6 camera hardware abstraction layer"
@@ -42,9 +42,24 @@ src_configure() {
 	cmake_src_configure
 }
 
+src_install() {
+	cmake_src_install
+
+	# Grant the PSYS device node to the active session user.
+	udev_dorules \
+		"${FILESDIR}/72-ipu6-psys.rules" \
+		"${FILESDIR}/72-ipu7-psys.rules"
+}
+
 pkg_postinst() {
+	udev_reload
+
 	elog "This is Intel's camera HAL, separate from libcamera's software ISP."
 	elog "It requires a compatible IPU6 PSYS driver and firmware."
 	elog "GStreamer applications need Intel's icamerasrc plugin to use this HAL."
 	elog "See /usr/share/doc/${PF}/README.gentoo* for details."
+}
+
+pkg_postrm() {
+	udev_reload
 }
