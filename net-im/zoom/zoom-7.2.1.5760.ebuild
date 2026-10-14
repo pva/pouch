@@ -37,8 +37,6 @@ RDEPEND="zoom-symlink? ( !games-engines/zoom )
 	media-libs/mesa[gbm(+)]
 	media-sound/mpg123
 	net-print/cups
-	net-wireless/iw
-	net-wireless/wireless-tools
 	sys-apps/dbus
 	sys-apps/util-linux
 	sys-libs/glibc
@@ -105,7 +103,8 @@ src_install() {
 	doins -r calendar cef diagnostic email imjs js json new_home_page ringtone sip \
 		timezones translations
 	doins *.pcm Embedded.properties version.txt unifywebview_config.zip
-	doexe zoom zopen ZoomClips ZoomLauncher ZoomWebviewHost *.sh \
+	# Do not install the Wi-Fi BSSID helper (getbssid.sh).
+	doexe zoom zopen ZoomClips ZoomLauncher ZoomWebviewHost \
 		aomhost cpthost libaomagent.so libcml.so libdvf.so libmkldnn.so \
 		libavcodec.so* libavformat.so* libavutil.so* libswresample.so*
 	fperms a+x /opt/zoom/cef/chrome_sandbox
