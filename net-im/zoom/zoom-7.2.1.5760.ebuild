@@ -105,7 +105,8 @@ src_install() {
 	doins *.pcm Embedded.properties version.txt unifywebview_config.zip
 	# Do not install the Wi-Fi BSSID helper (getbssid.sh).
 	doexe zoom zopen ZoomClips ZoomLauncher ZoomWebviewHost \
-		aomhost cpthost libaomagent.so libcml.so libdvf.so libmkldnn.so \
+		aomhost cpthost crashpad_handler minidump_processor \
+		libaomagent.so libcml.so libdvf.so libmkldnn.so liboffline_audio.so \
 		libavcodec.so* libavformat.so* libavutil.so* libswresample.so*
 	fperms a+x /opt/zoom/cef/chrome_sandbox
 	dosym -r {"/usr/$(get_libdir)",/opt/zoom}/libmpg123.so
