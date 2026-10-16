@@ -103,7 +103,8 @@ src_install() {
 	doins -r calendar cef diagnostic email imjs js json new_home_page ringtone sip \
 		timezones translations
 	doins *.pcm Embedded.properties version.txt unifywebview_config.zip
-	# Do not install the Wi-Fi BSSID helper (getbssid.sh).
+	# Do not install getbssid.sh: the code that invokes this Wi-Fi BSSID
+	# helper appears to be unreachable.
 	doexe zoom zopen ZoomClips ZoomLauncher ZoomWebviewHost \
 		aomhost cpthost crashpad_handler minidump_processor \
 		libaomagent.so libcml.so libdvf.so libmkldnn.so liboffline_audio.so \
@@ -118,11 +119,17 @@ src_install() {
 		dosym -r {"/usr/$(get_libdir)",/opt/zoom}/libOpenCL.so.1
 	fi
 
+	# Zoom checks this directory before starting ZoomWebviewHost,
+	# even when using system Qt.
+	keepdir /opt/zoom/Qt/lib
+
 	use zoom-symlink && dosym -r /opt/zoom/ZoomLauncher /usr/bin/zoom
 
-	make_desktop_entry "${EPREFIX}/opt/zoom/ZoomLauncher %U" Zoom \
-		videoconference-zoom "Network;VideoConference;" \
-		"MimeType=$(printf '%s;' \
+	# Match Zoom's QGuiApplication::desktopFileName() for portal registration.
+	make_desktop_entry --eapi9 "${EPREFIX}/opt/zoom/ZoomLauncher" \
+		--args "%U" --desktopid Zoom --name Zoom \
+		--icon videoconference-zoom --categories "Network;VideoConference;" \
+		--entry "MimeType=$(printf '%s;' \
 			x-scheme-handler/zoommtg \
 			x-scheme-handler/zoomus \
 			application/x-zoom)"
