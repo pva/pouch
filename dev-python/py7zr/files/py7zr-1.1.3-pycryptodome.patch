@@ -28,3 +28,14 @@ Gentoo packages PyCryptodome as Crypto rather than Cryptodome.
        'brotli>=1.2.0;platform_python_implementation=="CPython"',
        'brotlicffi>=1.2.0.0;platform_python_implementation=="PyPy"',
        'psutil;sys_platform!="cygwin"',
+--- a/tests/test_extra_codecs.py
++++ b/tests/test_extra_codecs.py
+@@ -7,7 +7,7 @@
+ import zlib
+ 
+ import pytest
+-from Cryptodome.Cipher import AES
++from Crypto.Cipher import AES
+ 
+ import py7zr
+ import py7zr.compressor
