@@ -1,0 +1,17 @@
+From 5039756364f4291766403aae29dc3e20c627eaad Mon Sep 17 00:00:00 2001
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+Date: Sat, 21 Dec 2024 10:27:06 +0100
+Subject: [PATCH] TranslateClauseWithTerminator: keep more room in num_wtab
+ (#2099)
+
+Upstream: https://github.com/espeak-ng/espeak-ng/commit/5039756364f4291766403aae29dc3e20c627eaad
+Backport to 1.52.0: refresh context only.
+
+diff --git a/src/libespeak-ng/translate.c b/src/libespeak-ng/translate.c
+--- a/src/libespeak-ng/translate.c
++++ b/src/libespeak-ng/translate.c
+@@ -1554,3 +1554,3 @@
+-			while (pn < &number_buf[sizeof(number_buf)-20] && nw < N_CLAUSE_WORDS-1) {
++			while (pn < &number_buf[sizeof(number_buf)-20] && nw < N_CLAUSE_WORDS-2) {
+ 				if (!IsDigit09(c = *pw++) && (c != tr->langopts.decimal_sep))
+ 					break;

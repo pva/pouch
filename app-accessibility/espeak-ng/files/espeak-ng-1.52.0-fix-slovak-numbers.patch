@@ -1,0 +1,26 @@
+From a3c87bd6c3126152795e7c741ff1f20716f0f9f1 Mon Sep 17 00:00:00 2001
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+Date: Mon, 30 Dec 2024 22:51:13 +0100
+Subject: [PATCH] Fix numbers for slovak (#2110)
+
+Upstream: https://github.com/espeak-ng/espeak-ng/commit/a3c87bd6c3126152795e7c741ff1f20716f0f9f1
+Backport to 1.52.0: refresh context only.
+
+diff --git a/src/libespeak-ng/translate.c b/src/libespeak-ng/translate.c
+--- a/src/libespeak-ng/translate.c
++++ b/src/libespeak-ng/translate.c
+@@ -1591,7 +1591,7 @@
+ 			for (pw = &number_buf[3]; pw < pn && nw < N_CLAUSE_WORDS;) {
+ 				// keep wflags for each part, for FLAG_HYPHEN_AFTER
+ 				dict_flags = TranslateWord2(tr, pw, &num_wtab[nw++], words[ix].pre_pause);
+-				while (*pw && *pw++ != ' ')
++				while (*pw++ != ' ')
+ 					;
+ 				words[ix].pre_pause = 0;
+ 			}
+diff --git a/tests/language-numbers-cardinal.test b/tests/language-numbers-cardinal.test
+--- a/tests/language-numbers-cardinal.test
++++ b/tests/language-numbers-cardinal.test
+@@ -33,1 +33,2 @@
+ test_phon it "dz'E*o_| 'items" "0 items" "NUM_SINGLE_VOWEL"
++test_phon sk "dv'ana:st; t;'isi:ts_! t@-*'ist'o St'i*itsat;p'&t;" "12345" "mixed"

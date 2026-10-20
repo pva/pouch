@@ -1,0 +1,20 @@
+From fe53b1b29dddb4a4a73ce62b53a3cd2fa988cea8 Mon Sep 17 00:00:00 2001
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+Date: Thu, 19 Dec 2024 00:17:36 +0100
+Subject: [PATCH] TranslateClauseWithTerminator: Also check against \0 (#2090)
+
+Upstream: https://github.com/espeak-ng/espeak-ng/commit/fe53b1b29dddb4a4a73ce62b53a3cd2fa988cea8
+Backport to 1.52.0: refresh context only.
+
+diff --git a/src/libespeak-ng/translate.c b/src/libespeak-ng/translate.c
+--- a/src/libespeak-ng/translate.c
++++ b/src/libespeak-ng/translate.c
+@@ -1591,7 +1591,7 @@
+ 			for (pw = &number_buf[3]; pw < pn;) {
+ 				// keep wflags for each part, for FLAG_HYPHEN_AFTER
+ 				dict_flags = TranslateWord2(tr, pw, &num_wtab[nw++], words[ix].pre_pause);
+-				while (*pw++ != ' ')
++				while (*pw && *pw++ != ' ')
+ 					;
+ 				words[ix].pre_pause = 0;
+ 			}

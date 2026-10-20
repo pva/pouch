@@ -1,0 +1,24 @@
+From 33b6daf420710eca2f6b2dcdc8eb3f6d72e1d313 Mon Sep 17 00:00:00 2001
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+Date: Sat, 21 Dec 2024 00:07:12 +0100
+Subject: [PATCH] Fix dropping last byte of stdin input
+
+This got broken with eaa0c9aa08350ce8a1343aed4c0a87c1cc329b0e ("Fix
+truncated fgetc return value in main(espeak-ng.c). [Coverity]") which
+rightfully stopped adding a bogus EOF at the end of the input, which
+this line was probably dropping just by luck.
+Fixes brailcom/speechd#978
+
+Upstream: https://github.com/espeak-ng/espeak-ng/commit/33b6daf420710eca2f6b2dcdc8eb3f6d72e1d313
+Backport to 1.52.0: refresh context only.
+
+diff --git a/src/espeak-ng.c b/src/espeak-ng.c
+--- a/src/espeak-ng.c
++++ b/src/espeak-ng.c
+@@ -764,4 +764,4 @@
+ 			if (ix > 0) {
+-				p_text[ix-1] = 0;
+-				espeak_Synth(p_text, ix+1, 0, POS_CHARACTER, 0, synth_flags, NULL, NULL);
++				p_text[ix] = 0;
++				espeak_Synth(p_text, ix, 0, POS_CHARACTER, 0, synth_flags, NULL, NULL);
+ 			}

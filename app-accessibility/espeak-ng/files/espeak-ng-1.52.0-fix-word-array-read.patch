@@ -1,0 +1,18 @@
+From a7be9c7e5975e886935ef92c5f15f0b28dcda328 Mon Sep 17 00:00:00 2001
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+Date: Sat, 21 Dec 2024 22:39:50 +0100
+Subject: [PATCH] TranslateClauseWithTerminator: Avoid unbound read of word
+ array (#2104)
+
+Upstream: https://github.com/espeak-ng/espeak-ng/commit/a7be9c7e5975e886935ef92c5f15f0b28dcda328
+Backport to 1.52.0: refresh context only.
+
+diff --git a/src/libespeak-ng/translate.c b/src/libespeak-ng/translate.c
+--- a/src/libespeak-ng/translate.c
++++ b/src/libespeak-ng/translate.c
+@@ -1586,4 +1586,4 @@
+ 			// include the next few characters, in case there are an ordinal indicator or other suffix
+-			memcpy(pn, pw, 16);
++			strncpy(pn, pw, 16);
+ 			pn[16] = 0;
+ 			nw = 0;

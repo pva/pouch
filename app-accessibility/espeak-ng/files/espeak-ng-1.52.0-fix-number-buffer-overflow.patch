@@ -1,0 +1,20 @@
+From f3b4112d29af276e0532131c8223d87848adb964 Mon Sep 17 00:00:00 2001
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+Date: Tue, 31 Dec 2024 12:36:17 +0100
+Subject: [PATCH] TranslateClauseWithTerminator: fix overflowing number_buf
+ (#2111)
+
+Upstream: https://github.com/espeak-ng/espeak-ng/commit/f3b4112d29af276e0532131c8223d87848adb964
+Backport to 1.52.0: refresh context only.
+
+diff --git a/src/libespeak-ng/translate.c b/src/libespeak-ng/translate.c
+--- a/src/libespeak-ng/translate.c
++++ b/src/libespeak-ng/translate.c
+@@ -1592,6 +1592,6 @@
+ 				// keep wflags for each part, for FLAG_HYPHEN_AFTER
+ 				dict_flags = TranslateWord2(tr, pw, &num_wtab[nw++], words[ix].pre_pause);
+-				while (*pw++ != ' ')
++				while (pw < pn && *pw++ != ' ')
+ 					;
+ 				words[ix].pre_pause = 0;
+ 			}

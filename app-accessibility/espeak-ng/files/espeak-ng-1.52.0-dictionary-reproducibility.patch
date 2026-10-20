@@ -1,0 +1,29 @@
+From 98321c9d281843bf62fd59c9872d2ee2e486f98e Mon Sep 17 00:00:00 2001
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+Date: Sun, 15 Dec 2024 14:09:02 +0100
+Subject: [PATCH] compiledict: make rgroup_sorter not depend on allocator
+
+To get reproducibility, we should not depend on the memory
+allocator-provided pointer values. We can instead just use the group
+creation order.
+
+Upstream: https://github.com/espeak-ng/espeak-ng/commit/98321c9d281843bf62fd59c9872d2ee2e486f98e
+Backport to 1.52.0: refresh context only.
+
+diff --git a/src/libespeak-ng/compiledict.c b/src/libespeak-ng/compiledict.c
+index 9304f4e152..7fb1fb792d 100644
+--- a/src/libespeak-ng/compiledict.c
++++ b/src/libespeak-ng/compiledict.c
+@@ -150,2 +150,3 @@ typedef struct {
+ 	int group3_ix;
++	int index;
+ } RGROUP;
+@@ -1193,3 +1194,3 @@ static int __cdecl rgroup_sorter(RGROUP *a, RGROUP *b)
+ 	if (ix != 0) return ix;
+-	return (uintptr_t)a->start - (uintptr_t)b->start;
++	return a->index - b->index;
+ }
+@@ -1377,2 +1378,3 @@ static espeak_ng_STATUS compile_dictrules(CompileContext *ctx, FILE *f_in, FILE
+ 				rgroup[n_rgroups].start = output_rule_group(n_rules, rules, ctx->group_name, &rgroup[n_rgroups].length);
++				rgroup[n_rgroups].index = n_rgroups;
+ 				n_rgroups++;

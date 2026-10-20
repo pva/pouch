@@ -1,0 +1,26 @@
+From bf8d06c4784f6af05a46dd30e1cf5da06614e78b Mon Sep 17 00:00:00 2001
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+Date: Thu, 19 Dec 2024 01:36:07 +0100
+Subject: [PATCH] TranslateClauseWithTerminator: Look out for filling num_wtab
+ (#2093)
+
+Upstream: https://github.com/espeak-ng/espeak-ng/commit/bf8d06c4784f6af05a46dd30e1cf5da06614e78b
+Backport to 1.52.0: refresh context only.
+
+diff --git a/src/libespeak-ng/translate.c b/src/libespeak-ng/translate.c
+--- a/src/libespeak-ng/translate.c
++++ b/src/libespeak-ng/translate.c
+@@ -1500 +1500 @@
+-		WORD_TAB num_wtab[50]; // copy of 'words', when splitting numbers into parts
++		WORD_TAB num_wtab[N_CLAUSE_WORDS]; // copy of 'words', when splitting numbers into parts
+@@ -1554,3 +1554,3 @@
+-			while (pn < &number_buf[sizeof(number_buf)-20]) {
++			while (pn < &number_buf[sizeof(number_buf)-20] && nw < N_CLAUSE_WORDS-1) {
+ 				if (!IsDigit09(c = *pw++) && (c != tr->langopts.decimal_sep))
+ 					break;
+@@ -1591,4 +1591,4 @@
+-			for (pw = &number_buf[3]; pw < pn;) {
++			for (pw = &number_buf[3]; pw < pn && nw < N_CLAUSE_WORDS;) {
+ 				// keep wflags for each part, for FLAG_HYPHEN_AFTER
+ 				dict_flags = TranslateWord2(tr, pw, &num_wtab[nw++], words[ix].pre_pause);
+ 				while (*pw && *pw++ != ' ')
