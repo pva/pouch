@@ -75,7 +75,8 @@ src_configure() {
 
 src_test() {
 	local CMAKE_SKIP_TESTS=(
-		$(usev !png '^TestImage3$')
+		# TestSaveOnSigning loads ReferenceImage.png for the signature appearance.
+		$(usev !png '^TestImage3$ ^TestSaveOnSigning$')
 		$(usev !jpeg '^TestImage(2|4|5)$')
 		$(usev !tiff '^TestImage(7|8)$')
 	)
