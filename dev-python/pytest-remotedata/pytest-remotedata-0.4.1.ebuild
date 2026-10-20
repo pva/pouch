@@ -25,4 +25,10 @@ BDEPEND="
 "
 
 EPYTEST_PLUGINS=( "${PN}" )
+EPYTEST_PLUGIN_LOAD_VIA_ENV=1
+EPYTEST_DESELECT=(
+	# These tests require successful internet access from a subprocess.
+	tests/test_strict_check.py::test_default_behavior
+	'tests/test_strict_check.py::test_strict_with_decorator[any]'
+)
 distutils_enable_tests pytest
