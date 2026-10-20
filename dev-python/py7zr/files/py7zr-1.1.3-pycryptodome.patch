@@ -1,0 +1,29 @@
+From: Gentoo Authors
+Subject: [PATCH] Use Gentoo's Crypto namespace for PyCryptodome
+
+Gentoo packages PyCryptodome as Crypto rather than Cryptodome.
+
+--- a/py7zr/compressor.py
++++ b/py7zr/compressor.py
+@@ -32,8 +32,8 @@
+ import bcj
+ import inflate64
+ import pyppmd
+-from Cryptodome.Cipher import AES
+-from Cryptodome.Random import get_random_bytes
++from Crypto.Cipher import AES
++from Crypto.Random import get_random_bytes
+ from py7zr.exceptions import PasswordRequired, UnsupportedCompressionMethodError
+ from py7zr.helpers import calculate_crc32, calculate_key
+ from py7zr.io import Buffer
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -27,7 +27,7 @@
+ ]
+ dependencies = [
+       "texttable",
+-      "pycryptodomex>=3.20.0",
++      "pycryptodome>=3.20.0",
+       'brotli>=1.2.0;platform_python_implementation=="CPython"',
+       'brotlicffi>=1.2.0.0;platform_python_implementation=="PyPy"',
+       'psutil;sys_platform!="cygwin"',
