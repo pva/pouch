@@ -54,5 +54,8 @@ export SETUPTOOLS_SCM_PRETEND_VERSION=${PV}
 python_test() {
 	# Run benchmark cases once, without timing and calibration loops.
 	# Skip remote tests and reject unexpected internet access; allow localhost.
-	epytest --benchmark-disable --remote-data=none -o remote_data_strict=true
+	# Some tests leave cwd inside tmp_path; retain directories until the run ends.
+	epytest --benchmark-disable --remote-data=none \
+		-o remote_data_strict=true \
+		-o tmp_path_retention_policy=all
 }
