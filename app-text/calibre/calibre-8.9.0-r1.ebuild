@@ -12,6 +12,7 @@ DESCRIPTION="Ebook management application"
 HOMEPAGE="https://calibre-ebook.com/"
 SRC_URI="
 	https://download.calibre-ebook.com/${PV}/${P}.tar.xz
+	https://github.com/pva/pva.github.io/releases/download/v1.0/${P}-podofo-1.1.2.patch.xz
 	verify-sig? ( https://calibre-ebook.com/signatures/${P}.tar.xz.sig )
 "
 VERIFY_SIG_OPENPGP_KEY_PATH=/usr/share/openpgp-keys/kovidgoyal.gpg
@@ -128,8 +129,16 @@ PATCHES=(
 	"${FILESDIR}/${PN}-7.0.0-jxr-test.patch"
 	"${FILESDIR}/${PN}-8.9.0-piper.patch"
 	"${FILESDIR}/${PN}-8.9-qt6.10.patch"
-	"${FILESDIR}/${PN}-8.9.0-podofo-1.1.2.patch"
+	"${WORKDIR}/${P}-podofo-1.1.2.patch"
 )
+
+src_unpack() {
+	if use verify-sig; then
+		verify-sig_verify_detached "${DISTDIR}/${P}.tar.xz"{,.sig}
+	fi
+
+	default
+}
 
 src_prepare() {
 	default
