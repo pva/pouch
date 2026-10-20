@@ -5,7 +5,7 @@ Gentoo packages PyCryptodome as Crypto rather than Cryptodome.
 
 --- a/py7zr/compressor.py
 +++ b/py7zr/compressor.py
-@@ -32,8 +32,8 @@
+@@ -33,9 +33,9 @@
  import bcj
  import inflate64
  import pyppmd
@@ -13,6 +13,7 @@ Gentoo packages PyCryptodome as Crypto rather than Cryptodome.
 -from Cryptodome.Random import get_random_bytes
 +from Crypto.Cipher import AES
 +from Crypto.Random import get_random_bytes
+ 
  from py7zr.exceptions import PasswordRequired, UnsupportedCompressionMethodError
  from py7zr.helpers import calculate_crc32, calculate_key
  from py7zr.io import Buffer
