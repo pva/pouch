@@ -1,0 +1,47 @@
+Temporarily disable the shared Kokoro/Piper extension.
+
+Both engines use ONNX Runtime and espeak_TextToPhonemesWithTerminator().
+Do not require either backend while its system dependencies are unavailable.
+Keep the runtime import probe intact so the GUI does not advertise this engine.
+Pure Python Kokoro tests remain enabled; its espeak test skips a missing extension.
+Rebased from Gentoo calibre-8.9.0-piper.patch.
+https://bugs.gentoo.org/961974
+
+--- a/setup/extensions.json
++++ b/setup/extensions.json
+@@ -135,14 +135,6 @@
+ 		"needs_c++": "17"
+     },
+     {
+-        "name": "piper",
+-        "sources": "calibre/utils/tts/piper.cpp",
+-		"needs_c++": "17",
+-        "libraries": "!piper_libs",
+-        "lib_dirs": "!piper_lib_dirs",
+-        "inc_dirs": "!piper_inc_dirs"
+-    },
+-    {
+         "name": "html_as_json",
+         "sources": "calibre/srv/html_as_json.cpp",
+ 		"needs_c++": "11"
+--- a/src/calibre/constants.py
++++ b/src/calibre/constants.py
+@@ -253,7 +253,6 @@
+             'rcc_backend',
+             'icu',
+             'speedup',
+-            'piper',
+             'html_as_json',
+             'fast_css_transform',
+             'translator',
+--- a/src/calibre/utils/run_tests.py
++++ b/src/calibre/utils/run_tests.py
+@@ -591,6 +591,8 @@
+                 'calibre.utils.open_with.linux',
+                 'calibre.gui2.linux_file_dialogs',
+             }
++        # ONNX Runtime and the required espeak-ng API are not packaged yet.
++        exclude_modules |= {'calibre.gui2.tts.piper', 'calibre.utils.tts.piper'}
+         if 'SKIP_SPEECH_TESTS' in os.environ:
+             exclude_packages.add('calibre.gui2.tts')
+         if not isbsd:

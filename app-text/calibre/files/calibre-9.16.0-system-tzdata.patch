@@ -1,0 +1,20 @@
+Use system zoneinfo data instead of importing Gentoo's tzdata shim.
+
+Gentoo dev-python/tzdata deliberately raises ModuleNotFoundError on import.
+Based on Debian 0020-No-need-to-use-tzdata-module-on-Unix.patch.
+https://github.com/kovidgoyal/calibre/pull/2920
+
+--- a/src/calibre/test_build.py
++++ b/src/calibre/test_build.py
+@@ -79,10 +79,9 @@
+         del CHMFile, chmlib
+ 
+     def test_tzdata(self):
+-        import tzdata
+         import tzlocal
+ 
+-        del tzlocal, tzdata
++        del tzlocal
+     def test_chardet(self):
+         from calibre_extensions.uchardet import detect
+ 

@@ -1,0 +1,17 @@
+Do not probe libpostproc, which was removed in FFmpeg 8.
+
+The calibre ffmpeg extension only links swresample, avcodec, avformat and avutil.
+Based on Debian 0021-Drop-libpostproc.patch.
+https://github.com/debian-calibre/calibre/blob/master/debian/patches/0021-Drop-libpostproc.patch
+
+--- a/setup/build_environment.py
++++ b/setup/build_environment.py
+@@ -221,7 +221,7 @@
+     libavif_inc_dirs = pkgconfig_include_dirs('libavif', 'LIBAVIF_INC_DIR', '/usr/include')
+     libavif_lib_dirs = pkgconfig_lib_dirs('libavif', 'LIBAVIF_LIB_DIR', '/usr/lib')
+     libavif_libs = pkgconfig_libs('libavif', '', 'avif')
+-    for x in ('libavcodec', 'libavformat', 'libavdevice', 'libavfilter', 'libavutil', 'libpostproc', 'libswresample', 'libswscale'):
++    for x in ('libavcodec', 'libavformat', 'libavdevice', 'libavfilter', 'libavutil', 'libswresample', 'libswscale'):
+         for inc in pkgconfig_include_dirs(x, '', '/usr/include'):
+             if inc and inc not in ffmpeg_inc_dirs:
+                 ffmpeg_inc_dirs.append(inc)
