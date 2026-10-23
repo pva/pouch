@@ -1,0 +1,17 @@
+Use system GoogleTest instead of downloading a bundled copy.
+
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -20,8 +20,4 @@
+-IF(FP16_BUILD_TESTS AND NOT DEFINED GOOGLETEST_SOURCE_DIR)
+-  MESSAGE(STATUS "Downloading Google Test to ${CMAKE_BINARY_DIR}/googletest-source (define GOOGLETEST_SOURCE_DIR to avoid it)")
+-  CONFIGURE_FILE(cmake/DownloadGoogleTest.cmake "${CMAKE_BINARY_DIR}/googletest-download/CMakeLists.txt")
+-  EXECUTE_PROCESS(COMMAND "${CMAKE_COMMAND}" -G "${CMAKE_GENERATOR}" .
+-    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/googletest-download")
+-  EXECUTE_PROCESS(COMMAND "${CMAKE_COMMAND}" --build .
+-    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/googletest-download")
+-  SET(GOOGLETEST_SOURCE_DIR "${CMAKE_BINARY_DIR}/googletest-source" CACHE STRING "Google Test source directory")
++IF(FP16_BUILD_TESTS AND NOT DEFINED GOOGLETEST_SOURCE_DIR AND NOT TARGET gtest)
++  FIND_PACKAGE(GTest CONFIG REQUIRED)
++  ADD_LIBRARY(gtest ALIAS GTest::gtest)
++  ADD_LIBRARY(gtest_main ALIAS GTest::gtest_main)
