@@ -6,9 +6,9 @@ same dependencies and build settings to both targets and install both.
 
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -38,8 +38,8 @@
- SET(CMAKE_CXX_STANDARD_REQUIRED YES)
+@@ -42,8 +42,8 @@
  SET(CMAKE_CXX_EXTENSIONS NO)
+
  # ---[ Options.
 -SET(XNNPACK_LIBRARY_TYPE "default" CACHE STRING "Type of library (shared, static, or default) to build")
 -SET_PROPERTY(CACHE XNNPACK_LIBRARY_TYPE PROPERTY STRINGS default static shared)
@@ -17,7 +17,7 @@ same dependencies and build settings to both targets and install both.
  IF(CMAKE_C_COMPILER_ID STREQUAL "MSVC")
    # Disable assembly when using MSVC until support is added.
    OPTION(XNNPACK_ENABLE_ASSEMBLY "Build XNNPACK with assembly micro-kernels" OFF)
-@@ -842,14 +842,22 @@
+@@ -877,14 +877,22 @@
    ADD_LIBRARY(xnnpack-subgraph OBJECT ${SUBGRAPH_SRCS})
    # Need C_EXTENSIONS to get constants for mmap (MAP_ANONYMOUS).
    SET_TARGET_PROPERTIES(xnnpack-memory PROPERTIES C_EXTENSIONS YES)
@@ -39,9 +39,9 @@ same dependencies and build settings to both targets and install both.
 -    MESSAGE(FATAL_ERROR "Unsupported XNNPACK library type \"${XNNPACK_LIBRARY_TYPE}\". Must be \"static\", \"shared\", or \"default\"")
 +    MESSAGE(FATAL_ERROR "Unsupported XNNPACK library type \"${XNNPACK_LIBRARY_TYPE}\". Must be \"static\", \"shared\", \"both\", or \"default\"")
    ENDIF()
+
    TARGET_LINK_LIBRARIES(xnnpack-allocator PRIVATE xnnpack-base xnnpack-logging)
-   TARGET_LINK_LIBRARIES(xnnpack-cache PRIVATE xnnpack-base xnnpack-logging)
-@@ -864,12 +872,14 @@
+@@ -900,12 +908,14 @@
    TARGET_LINK_LIBRARIES(xnnpack-operator-utils PRIVATE xnnpack-base xnnpack-logging)
    TARGET_LINK_LIBRARIES(xnnpack-reference-ukernels PRIVATE xnnpack-base xnnpack-datatype)
    TARGET_LINK_LIBRARIES(xnnpack-subgraph PRIVATE xnnpack-base xnnpack-allocator xnnpack-logging xnnpack-memory xnnpack-mutex xnnpack-operators xnnpack-operator-run xnnpack-datatype)
@@ -62,7 +62,7 @@ same dependencies and build settings to both targets and install both.
  ENDIF()
  IF(NOT MSVC)
    SET_PROPERTY(SOURCE ${ALL_MICROKERNEL_SRCS} APPEND_STRING PROPERTY COMPILE_FLAGS " -fno-math-errno ")
-@@ -1060,7 +1070,9 @@
+@@ -1098,7 +1108,9 @@
      TARGET_COMPILE_OPTIONS(xnnpack-mutex PRIVATE "$<$<NOT:$<CONFIG:Debug>>:/O1>")
      TARGET_COMPILE_OPTIONS(xnnpack-subgraph PRIVATE "$<$<NOT:$<CONFIG:Debug>>:/O1>")
      TARGET_COMPILE_OPTIONS(xnnpack-operators PRIVATE "$<$<NOT:$<CONFIG:Debug>>:/O1>")
@@ -73,7 +73,7 @@ same dependencies and build settings to both targets and install both.
    ENDIF()
  ELSE()
    TARGET_COMPILE_OPTIONS(xnnpack-base INTERFACE "$<$<NOT:$<CONFIG:Debug>>:-O2>")
-@@ -1082,19 +1094,25 @@
+@@ -1120,20 +1132,26 @@
      TARGET_COMPILE_OPTIONS(xnnpack-mutex PRIVATE "$<$<NOT:$<CONFIG:Debug>>:-Os>")
      TARGET_COMPILE_OPTIONS(xnnpack-subgraph PRIVATE "$<$<NOT:$<CONFIG:Debug>>:-Os>")
      TARGET_COMPILE_OPTIONS(xnnpack-operators PRIVATE "$<$<NOT:$<CONFIG:Debug>>:-Os>")
@@ -83,6 +83,7 @@ same dependencies and build settings to both targets and install both.
 +    ENDFOREACH()
    ENDIF()
  ENDIF()
+
  INCLUDE_DIRECTORIES(.)
  TARGET_INCLUDE_DIRECTORIES(xnnpack-hardware-config PRIVATE include src ${CPUINFO_SOURCE_DIR}/include)
  IF(XNNPACK_BUILD_LIBRARY)
@@ -102,9 +103,9 @@ same dependencies and build settings to both targets and install both.
    ENDIF()
 -  SET_PROPERTY(TARGET XNNPACK PROPERTY PUBLIC_HEADER include/xnnpack.h)
  ENDIF()
+
  # ---[ Find libm
- IF(XNNPACK_BUILD_WITH_LIBM)
-@@ -1108,7 +1126,9 @@
+@@ -1148,7 +1166,9 @@
      TARGET_LINK_LIBRARIES(xnnpack-indirection PRIVATE ${LIBM})
      TARGET_LINK_LIBRARIES(xnnpack-subgraph PRIVATE ${LIBM})
      IF(XNNPACK_BUILD_LIBRARY)
@@ -115,7 +116,7 @@ same dependencies and build settings to both targets and install both.
      ENDIF()
    ENDIF()
  ENDIF()
-@@ -1135,7 +1155,9 @@
+@@ -1176,7 +1196,9 @@
  ENDIF()
  IF(XNNPACK_BUILD_LIBRARY)
    TARGET_LINK_LIBRARIES(xnnpack-hardware-config PRIVATE cpuinfo)
@@ -124,9 +125,9 @@ same dependencies and build settings to both targets and install both.
 +    TARGET_LINK_LIBRARIES(${XNNPACK_LIBRARY_TARGET} PRIVATE cpuinfo)
 +  ENDFOREACH()
  ENDIF()
+
  # ---[ Configure pthreadpool
- IF(NOT TARGET pthreadpool)
-@@ -1184,10 +1206,12 @@
+@@ -1227,11 +1249,13 @@
  TARGET_LINK_LIBRARIES(xnnpack-microkernels-prod PRIVATE fxdiv)
  TARGET_LINK_LIBRARIES(xnnpack-indirection PRIVATE fxdiv)
  IF(XNNPACK_BUILD_LIBRARY)
@@ -135,6 +136,7 @@ same dependencies and build settings to both targets and install both.
 +    TARGET_LINK_LIBRARIES(${XNNPACK_LIBRARY_TARGET} PRIVATE fxdiv)
 +  ENDFOREACH()
  ENDIF()
+
  IF(XNNPACK_BUILD_LIBRARY)
 -  INSTALL(TARGETS XNNPACK xnnpack-microkernels-prod
 +  INSTALL(TARGETS ${XNNPACK_LIBRARY_TARGETS} xnnpack-microkernels-prod

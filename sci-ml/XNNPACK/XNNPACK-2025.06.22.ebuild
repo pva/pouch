@@ -26,7 +26,7 @@ RESTRICT="!test? ( test )"
 
 RDEPEND="
 	dev-libs/cpuinfo
-	dev-libs/pthreadpool
+	>=dev-libs/pthreadpool-2025.05.14
 "
 DEPEND="${RDEPEND}
 	dev-libs/FXdiv
