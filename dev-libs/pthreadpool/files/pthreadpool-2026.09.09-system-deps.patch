@@ -1,0 +1,37 @@
+Use system FXdiv and GoogleTest instead of downloading bundled copies.
+Keep the v2 tests separate from the legacy CTest entry.
+
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -10 +10 @@
+-CMAKE_MINIMUM_REQUIRED(VERSION 3.5 FATAL_ERROR)
++CMAKE_MINIMUM_REQUIRED(VERSION 3.10 FATAL_ERROR)
+@@ -69,8 +69,4 @@
+-IF(NOT DEFINED FXDIV_SOURCE_DIR)
+-  MESSAGE(STATUS "Downloading FXdiv to ${CMAKE_BINARY_DIR}/FXdiv-source (define FXDIV_SOURCE_DIR to avoid it)")
+-  CONFIGURE_FILE(cmake/DownloadFXdiv.cmake "${CMAKE_BINARY_DIR}/FXdiv-download/CMakeLists.txt")
+-  EXECUTE_PROCESS(COMMAND "${CMAKE_COMMAND}" -G "${CMAKE_GENERATOR}" .
+-    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/FXdiv-download")
+-  EXECUTE_PROCESS(COMMAND "${CMAKE_COMMAND}" --build .
+-    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/FXdiv-download")
+-  SET(FXDIV_SOURCE_DIR "${CMAKE_BINARY_DIR}/FXdiv-source" CACHE STRING "FXdiv source directory")
++IF(NOT DEFINED FXDIV_SOURCE_DIR AND NOT TARGET fxdiv)
++  FIND_PATH(FXDIV_INCLUDE_DIR NAMES fxdiv.h REQUIRED)
++  ADD_LIBRARY(fxdiv INTERFACE)
++  TARGET_INCLUDE_DIRECTORIES(fxdiv INTERFACE "${FXDIV_INCLUDE_DIR}")
+@@ -78,8 +74,4 @@
+-IF(PTHREADPOOL_BUILD_TESTS AND NOT DEFINED GOOGLETEST_SOURCE_DIR)
+-  MESSAGE(STATUS "Downloading Google Test to ${CMAKE_BINARY_DIR}/googletest-source (define GOOGLETEST_SOURCE_DIR to avoid it)")
+-  CONFIGURE_FILE(cmake/DownloadGoogleTest.cmake "${CMAKE_BINARY_DIR}/googletest-download/CMakeLists.txt")
+-  EXECUTE_PROCESS(COMMAND "${CMAKE_COMMAND}" -G "${CMAKE_GENERATOR}" .
+-    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/googletest-download")
+-  EXECUTE_PROCESS(COMMAND "${CMAKE_COMMAND}" --build .
+-    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/googletest-download")
+-  SET(GOOGLETEST_SOURCE_DIR "${CMAKE_BINARY_DIR}/googletest-source" CACHE STRING "Google Test source directory")
++IF(PTHREADPOOL_BUILD_TESTS AND NOT DEFINED GOOGLETEST_SOURCE_DIR AND NOT TARGET gtest)
++  FIND_PACKAGE(GTest CONFIG REQUIRED)
++  ADD_LIBRARY(gtest ALIAS GTest::gtest)
++  ADD_LIBRARY(gtest_main ALIAS GTest::gtest_main)
+@@ -183 +175 @@
+-    ADD_TEST(pthreadpool pthreadpool-v2-test)
++    ADD_TEST(pthreadpool-v2 pthreadpool-v2-test)
