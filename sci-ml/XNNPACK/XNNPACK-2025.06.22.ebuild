@@ -23,7 +23,6 @@ KEYWORDS="~amd64"
 IUSE="+assembly +memopt +sparse static-libs test"
 
 RESTRICT="!test? ( test )"
-REQUIRED_USE="test? ( static-libs )"
 
 RDEPEND="
 	dev-libs/cpuinfo
@@ -36,6 +35,10 @@ DEPEND="${RDEPEND}
 "
 BDEPEND="${PYTHON_DEPS}"
 
+PATCHES=(
+	"${FILESDIR}/${P}-cmake-shared-static.patch"
+)
+
 src_configure() {
 	# -Werror=strict-aliasing
 	# https://bugs.gentoo.org/953467
@@ -46,12 +49,19 @@ src_configure() {
 	# https://github.com/google/XNNPACK/issues/6806
 	filter-lto
 
+	# Tests link against static XNNPACK to access its hidden internal symbols.
+	# Always build the shared library, including when tests need the archive.
+	local library_type=shared
+	if use test || use static-libs; then
+		library_type=both
+	fi
+
 	local mycmakeargs=(
 		-DXNNPACK_BUILD_BENCHMARKS=OFF
 		-DXNNPACK_USE_SYSTEM_LIBS=ON
 		-DXNNPACK_BUILD_TESTS=$(usex test)
 		-DXNNPACK_BUILD_ALL_MICROKERNELS=$(usex test)
-		-DXNNPACK_LIBRARY_TYPE=$(usex static-libs static shared)
+		-DXNNPACK_LIBRARY_TYPE="${library_type}"
 		-DXNNPACK_ENABLE_ASSEMBLY=$(usex assembly)
 		-DXNNPACK_ENABLE_MEMOPT=$(usex memopt)
 		-DXNNPACK_ENABLE_SPARSE=$(usex sparse)
@@ -75,6 +85,6 @@ src_test() {
 src_install() {
 	cmake_src_install
 	if ! use static-libs; then
-		rm "${ED}/usr/$(get_libdir)/libxnnpack-microkernels-prod.a" || die
+		find "${ED}/usr/$(get_libdir)" -name '*.a' -delete || die
 	fi
 }
