@@ -36,6 +36,10 @@ BDEPEND="
 	>=dev-python/nanobind-2.13[${PYTHON_USEDEP}]
 "
 
+PATCHES=(
+	"${FILESDIR}/${P}-released-opset.patch"
+)
+
 src_prepare() {
 	distutils-r1_src_prepare
 	cmake_prepare

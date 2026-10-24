@@ -1,0 +1,35 @@
+Backport the opset-28 metadata fix needed by ONNX Runtime's ONNX 1.23 integration.
+
+Upstream: https://github.com/onnx/onnx/commit/b7253e6b82789d5abbe7c9fb2a8556f04b3a83b8
+
+ONNX 1.23.1 includes opset-28 schemas, but its C++ LastReleaseVersionMap still
+reports 27 as the latest released opset. ONNX Runtime uses this metadata to
+validate models when its released-opsets-only policy is enabled. Report 28
+so models declaring opset 28 are not incorrectly rejected as using an
+opset that is still under development.
+
+Keep VERSION_NUMBER at 1.23.1 for this Gentoo revision; retain both the C++
+metadata fix and the upstream Python regression-test updates.
+
+--- a/onnx/defs/schema.h
++++ b/onnx/defs/schema.h
+@@ -937,7 +937,7 @@ class OpSchemaRegistry final : public ISchemaRegistry {
+       // Version corresponding last release of ONNX. Update this to match with
+       // the max version above in a *release* version of ONNX. But in other
+       // versions, the max version may be ahead of the last-release-version.
+-      last_release_version_map_[ONNX_DOMAIN] = 27;
++      last_release_version_map_[ONNX_DOMAIN] = 28;
+       last_release_version_map_[AI_ONNX_ML_DOMAIN] = 5;
+       last_release_version_map_[AI_ONNX_TRAINING_DOMAIN] = 1;
+       last_release_version_map_[AI_ONNX_PREVIEW_DOMAIN] = 1;
+--- a/tests/python/helper_test.py
++++ b/tests/python/helper_test.py
+@@ -437,6 +437,8 @@ def test(opset_versions: list[tuple[str, int]], ir_version: int) -> None:
+         test([("", 24)], 12)
+         test([("", 25)], 13)
+         test([("", 26)], 13)
++        test([("", 27)], 13)
++        test([("", 28)], 14)
+         # standard opset can be referred to using empty-string or "ai.onnx"
+         test([("ai.onnx", 9)], 4)
+         test([("ai.onnx.ml", 2)], 6)
