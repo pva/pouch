@@ -1,0 +1,32 @@
+cmake_minimum_required(VERSION 3.16)
+project(SafeInt LANGUAGES C CXX)
+
+include(GNUInstallDirs)
+include(CTest)
+
+install(FILES SafeInt.hpp safe_math.h safe_math_impl.h
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+if(BUILD_TESTING)
+    set(test_sources
+        Test/AddVerify.cpp Test/AddTestCase.cpp Test/CastVerify.cpp
+        Test/DivVerify.cpp Test/DivTestCase.cpp Test/IncDecVerify.cpp
+        Test/ModVerify.cpp Test/MultVerify.cpp Test/MultTestCase.cpp
+        Test/SubVerify.cpp Test/SubTestCase.cpp Test/TestMain.cpp)
+
+    foreach(variant IN ITEMS native no-int128 no-intrinsics)
+        add_executable(safeint-${variant} ${test_sources})
+        target_compile_features(safeint-${variant} PRIVATE cxx_std_11)
+        add_test(NAME safeint-${variant} COMMAND safeint-${variant})
+        # The upstream test harness reports failures on stdout.
+        set_tests_properties(safeint-${variant} PROPERTIES
+            FAIL_REGULAR_EXPRESSION "Error")
+    endforeach()
+    target_compile_definitions(safeint-no-int128 PRIVATE SAFEINT_HAS_INT128=0)
+    target_compile_definitions(safeint-no-intrinsics PRIVATE
+        SAFEINT_HAS_INT128=0 SAFEINT_USE_INTRINSICS=0)
+
+    add_executable(safeint-compile
+        Test/CompileTest.cpp Test/ConstExpr.cpp Test/CleanCompile.cpp)
+    target_compile_features(safeint-compile PRIVATE cxx_std_11)
+endif()
