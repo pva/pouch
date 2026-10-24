@@ -1,0 +1,79 @@
+Use the configured compiler for the upstream test matrix.
+
+Select the matching tests through CMAKE_CXX_COMPILER_ID and retain the
+compiler path supplied by the toolchain. Do not search PATH for other
+compilers or switch CMAKE_CXX_COMPILER inside the test subdirectories.
+
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -25,9 +25,15 @@
+ include(CTest)
+
+ if (BUILD_TESTING)
+-    add_subdirectory(Test/ClangTest)
+-    add_subdirectory(Test/GccTest)
+-    add_subdirectory(Test/MsvcTest)
++    if(MSVC)
++        add_subdirectory(Test/MsvcTest)
++    elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
++        add_subdirectory(Test/ClangTest)
++    elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
++        add_subdirectory(Test/GccTest)
++    else()
++        message(FATAL_ERROR "No SafeInt tests for ${CMAKE_CXX_COMPILER_ID}")
++    endif()
+ endif()
+
+ add_library(SafeInt INTERFACE)
+--- a/Test/ClangTest/CMakeLists.txt
++++ b/Test/ClangTest/CMakeLists.txt
+@@ -16,14 +16,13 @@
+ # - compile without exceptions
+
+ # test for clang++
+-find_program(CLANG_PLUS_PLUS "clang++")
++set(CLANG_PLUS_PLUS "${CMAKE_CXX_COMPILER}")
+
+ if(NOT CLANG_PLUS_PLUS)
+     message(STATUS "Clang compiler not available, skipping")
+ else()
+     message(STATUS "clang++ available, configuring clang tests")
+
+-    set(CMAKE_CXX_COMPILER ${CLANG_PLUS_PLUS})
+
+     # the standard level is already at C++11, which is what we need for runtime tests
+     add_compile_options(-ftrapv)
+--- a/Test/GccTest/CMakeLists.txt
++++ b/Test/GccTest/CMakeLists.txt
+@@ -23,13 +23,12 @@
+ # other compilers on a best effort
+
+ # test for g++
+-find_program(GCC_PLUS_PLUS "g++")
++set(GCC_PLUS_PLUS "${CMAKE_CXX_COMPILER}")
+
+ if(NOT GCC_PLUS_PLUS)
+     message(STATUS "Skipping g++ testing")
+ else()
+     message(STATUS "g++ available, configuring g++ tests")
+-    set(CMAKE_CXX_COMPILER ${GCC_PLUS_PLUS})
+     # the standard level is already at C++11, which is what we need for runtime tests
+     add_compile_options(-ftrapv)
+
+--- a/Test/MsvcTest/CMakeLists.txt
++++ b/Test/MsvcTest/CMakeLists.txt
+@@ -23,13 +23,12 @@
+ # other compilers on a best effort
+
+ # test for g++
+-find_program(MSVC_CL "cl.exe")
++set(MSVC_CL "${CMAKE_CXX_COMPILER}")
+
+ if(NOT MSVC_CL)
+     message(STATUS "Skipping MSVC testing")
+ else()
+     message(STATUS "MSVC available, configuring MSVC tests")
+-    set(CMAKE_CXX_COMPILER ${MSVC_CL})
+
+     # the standard level is already at C++11, which is what we need for runtime tests
+     add_compile_options(/Wall /wd4710 /wd4711)

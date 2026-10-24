@@ -1,0 +1,124 @@
+From 4dd5d19e8d02618bd74e74a3ca50bfee93e43a2c Mon Sep 17 00:00:00 2001
+From: David LeBlanc <32500783+dcleblanc@users.noreply.github.com>
+Date: Sat, 9 May 2026 22:14:29 -0700
+Subject: [PATCH] Fix for issue #55 (#70)
+
+Upstream: https://github.com/dcleblanc/SafeInt/commit/4dd5d19e8d02618bd74e74a3ca50bfee93e43a2c
+Bug: https://github.com/dcleblanc/SafeInt/issues/55
+
+Move the regression test's headers and class template to namespace scope,
+and probe whether the standard library supports the C++98 compile tests.
+Backport all four files; rebase CMake context onto 3.0.28.
+
+--- a/Test/ClangTest/CMakeLists.txt
++++ b/Test/ClangTest/CMakeLists.txt
+@@ -150,4 +150,16 @@
+     target_compile_options(CompileTest_clang17_NoEH PUBLIC -Wall  -Wextra -std=c++17 -fno-exceptions)
+
++    # Probe whether the C++ standard library headers are still usable under
++    # -std=c++98.  As of libstdc++ 13, even <cstdint> hard-errors under
++    # c++98 mode; clang on Linux uses libstdc++ by default, so it inherits
++    # this restriction.
++    if(NOT DEFINED SAFEINT_CLANG_HAS_CPP98)
++        try_compile(SAFEINT_CLANG_HAS_CPP98
++            ${CMAKE_CURRENT_BINARY_DIR}/cxx98_probe
++            ${CMAKE_CURRENT_SOURCE_DIR}/../cxx98_probe.cpp
++            COMPILE_DEFINITIONS -std=c++98)
++    endif()
++
++    if(SAFEINT_CLANG_HAS_CPP98)
+     add_executable(CompileTest_clang98
+         ../CompileTest.cpp
+@@ -158,4 +170,7 @@
+
+     target_compile_options(CompileTest_clang98 PUBLIC -D SAFEINT_USE_CPLUSCPLUS_98 -Wall -std=c++98 -fno-exceptions)
++    else()
++        message(STATUS "Skipping CompileTest_clang98: c++98 headers not usable on this toolchain")
++    endif()
+
+     add_executable(safe_math_test_clang
+--- a/Test/CompileTest.cpp
++++ b/Test/CompileTest.cpp
+@@ -258,25 +258,27 @@
+ }
+
++#if CPLUSPLUS_STD == CPLUSPLUS_17
++#include <variant>
++#include <string>
++
++template<typename... T>
++class Union {
++public:
++	Union() = default;
++	Union& operator=(Union&&) noexcept = default;
++
++	template<typename F>
++	Union& operator=(F&& t) {
++		value = std::forward<F>(t);
++		return *this;
++	}
++
++	std::variant<T...> value;
++};
++#endif
++
+ void MoveRegression()
+ {
+ 	#if CPLUSPLUS_STD == CPLUSPLUS_17
+-	#include <variant>
+-	#include <string>
+-
+-	template<typename... T>
+-	class Union {
+-	public:
+-		Union() = default;
+-		Union& operator=(Union&&) noexcept = default;
+-
+-		template<typename F>
+-		Union& operator=(F&& t) {
+-			value = std::forward<F>(t);
+-			return *this;
+-		}
+-
+-		std::variant<T...> value;
+-	};
+-
+ 	Union<std::string, SafeInt<int64_t>> x;
+ 	Union<std::string, SafeInt<int64_t>> y;
+--- a/Test/GccTest/CMakeLists.txt
++++ b/Test/GccTest/CMakeLists.txt
+@@ -133,4 +133,16 @@
+     target_compile_options(CompileTest_gcc14_NoEH PUBLIC -Wall -std=c++14 -fno-exceptions)
+
++    # Probe whether the C++ standard library headers are still usable under
++    # -std=c++98.  As of gcc 13 / libstdc++ 13, even <cstdint> hard-errors
++    # under c++98 mode (#error in <bits/c++0x_warning.h>), so the c++98
++    # CompileTest target is unbuildable on those toolchains.
++    if(NOT DEFINED SAFEINT_GCC_HAS_CPP98)
++        try_compile(SAFEINT_GCC_HAS_CPP98
++            ${CMAKE_CURRENT_BINARY_DIR}/cxx98_probe
++            ${CMAKE_CURRENT_SOURCE_DIR}/../cxx98_probe.cpp
++            COMPILE_DEFINITIONS -std=c++98)
++    endif()
++
++    if(SAFEINT_GCC_HAS_CPP98)
+     add_executable(CompileTest_gcc98
+     ../CompileTest.cpp
+@@ -141,4 +153,7 @@
+
+     target_compile_options(CompileTest_gcc98 PUBLIC -D SAFEINT_USE_CPLUSCPLUS_98 -Wall -std=c++98 -fno-exceptions)
++    else()
++        message(STATUS "Skipping CompileTest_gcc98: c++98 headers not usable on this toolchain")
++    endif()
+
+     add_executable(safe_math_test_gcc
+--- /dev/null
++++ b/Test/cxx98_probe.cpp
+@@ -0,0 +1,7 @@
++// Minimal c++98 probe used by Test/{Gcc,Clang}Test/CMakeLists.txt to detect
++// whether the toolchain's C++ standard library headers are still usable
++// under -std=c++98.  As of libstdc++ 13, <cstdint> (and most other
++// headers) hard-error under c++98, so the c++98 CompileTest targets are
++// unbuildable on that toolchain.
++#include <cstdint>
++int main() { return 0; }

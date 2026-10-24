@@ -18,11 +18,21 @@ RESTRICT="!test? ( test )"
 
 DOCS=( README.md helpfile.md )
 
+PATCHES=(
+	"${FILESDIR}/${P}-install-the-library.patch"
+	"${FILESDIR}/${P}-make-tests-optional.patch"
+	"${FILESDIR}/${P}-strip-O3.patch"
+	"${FILESDIR}/${P}-move-regression.patch"
+	"${FILESDIR}/${P}-toolchain.patch"
+)
+
 src_prepare() {
-	# Upstream's test build searches for and runs GCC, Clang and MSVC
-	# independently. Use the selected toolchain and respect the user's flags.
-	cp "${FILESDIR}/${P}-CMakeLists.txt" CMakeLists.txt || die
 	cmake_src_prepare
+
+	# Match 3.0.28a: header-only C functions need internal linkage when
+	# the compiler does not inline them (e.g. MultiplyInt64 with GCC).
+	# https://github.com/dcleblanc/SafeInt/blob/3.0.28a/safe_math_impl.h
+	sed -i -e 's/^inline /static inline /' safe_math{,_impl}.h || die
 }
 
 src_configure() {
