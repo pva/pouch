@@ -74,6 +74,7 @@ src_prepare() {
 
 src_configure() {
 	local mycmakeargs=(
+		--compile-no-warning-as-error
 		-DCMAKE_PROJECT_onnxruntime_INCLUDE="${FILESDIR}/${P}-system-deps.cmake"
 		-DFETCHCONTENT_FULLY_DISCONNECTED=ON
 		-DFETCHCONTENT_TRY_FIND_PACKAGE_MODE=ALWAYS
