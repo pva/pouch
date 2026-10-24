@@ -37,6 +37,7 @@ BDEPEND="${PYTHON_DEPS}"
 
 PATCHES=(
 	"${FILESDIR}/${P}-cmake-shared-static.patch"
+	"${FILESDIR}/${P}-f16-isnan.patch"
 )
 
 src_configure() {
