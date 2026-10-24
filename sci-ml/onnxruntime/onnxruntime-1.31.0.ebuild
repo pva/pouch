@@ -9,7 +9,10 @@ inherit cmake python-any-r1
 
 DESCRIPTION="Cross-platform inference engine for ONNX machine learning models"
 HOMEPAGE="https://onnxruntime.ai/ https://github.com/microsoft/onnxruntime"
-SRC_URI="https://github.com/microsoft/${PN}/archive/refs/tags/v${PV}.tar.gz -> ${P}.tar.gz"
+SRC_URI="
+	https://github.com/microsoft/${PN}/archive/refs/tags/v${PV}.tar.gz -> ${P}.tar.gz
+	https://github.com/pva/pva.github.io/releases/download/v1.0/${P}-onnx-1.23.patch.xz
+"
 
 # Eigen, Boost.MP11 and other system headers are compiled into the library.
 LICENSE="MIT Apache-2.0 BSD Boost-1.0 MPL-2.0"
@@ -49,6 +52,7 @@ CMAKE_USE_DIR="${S}/cmake"
 DOCS=( README.md ThirdPartyNotices.txt )
 
 PATCHES=(
+	"${WORKDIR}/${P}-onnx-1.23.patch"
 	"${FILESDIR}/${P}-system-cpuinfo.patch"
 	"${FILESDIR}/${P}-flatc-args.patch"
 	"${FILESDIR}/${P}-system-cpu-providers.patch"
