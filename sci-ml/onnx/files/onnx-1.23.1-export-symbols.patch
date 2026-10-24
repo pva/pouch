@@ -1,0 +1,18 @@
+Don't force hidden visibility for the ONNX C++ library.
+
+ONNX Runtime uses functions such as DataTypeUtils::ToType and OpSchema::Attr
+that are not annotated with ONNX_API. Forcing hidden visibility makes these
+symbols unavailable from libonnx.so, causing undefined references when linking
+against system ONNX. Remove the target's visibility override so the build's
+default visibility settings apply.
+
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -530,7 +530,6 @@
+ add_library(onnx $<TARGET_OBJECTS:onnx_proto>)
+ add_subdirectory(onnx)
+ add_dependencies(onnx onnx_proto)
+-set_target_properties(onnx PROPERTIES CXX_VISIBILITY_PRESET hidden)
+ add_onnx_global_defines(onnx)
+ if(ONNX_BUILD_PYTHON)
+   if(BUILD_SHARED_LIBS)

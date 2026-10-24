@@ -38,6 +38,7 @@ BDEPEND="
 
 PATCHES=(
 	"${FILESDIR}/${P}-released-opset.patch"
+	"${FILESDIR}/${P}-export-symbols.patch"
 )
 
 src_prepare() {
