@@ -1,0 +1,69 @@
+Respect XNN_ENABLE_ASSEMBLY when selecting x86 GEMM kernels.
+
+CMake omits the assembly sources when this option is disabled. Guard the
+FP32, BF16 and AVX512VNNI kernel registrations accordingly. Use the existing
+intrinsics fallbacks for FP32 and AVX512VNNI.
+
+The BF16 implementation in this snapshot has no intrinsics fallback.
+Disabling assembly leaves bf16_f32_gemm_config zero-initialized even on
+CPUs supporting BF16. Check mr, the microkernel's row tile size: mr == 0
+means no kernel was selected. Return NULL in that case so operator creation
+reports xnn_status_unsupported_hardware. This follows the existing PF32
+configuration initializer.
+
+--- a/src/configs/gemm-config.c
++++ b/src/configs/gemm-config.c
+@@ -295,7 +295,7 @@
+   assert(hardware_config != NULL);
+   (void) hardware_config;  // May be unused.
+   if (XNN_ENABLE_AVX512BF16 && (hardware_config->arch_flags & xnn_arch_x86_avx512bf16)) {
+-    #if XNN_ENABLE_AVX512BF16
++    #if XNN_ENABLE_ASSEMBLY && XNN_ENABLE_AVX512BF16
+       bf16_f32_gemm_config.minmax.gemm[XNN_MR_TO_INDEX(1)] = xnn_init_hmp_gemm_ukernel((xnn_gemm_ukernel_fn) xnn_bf16_f32_gemm_minmax_ukernel_1x32c2__asm_amd64_avx512bf16_broadcast);
+       bf16_f32_gemm_config.minmax.gemm[XNN_MR_TO_INDEX(11)] = xnn_init_hmp_gemm_ukernel((xnn_gemm_ukernel_fn) xnn_bf16_f32_gemm_minmax_ukernel_11x32c2__asm_amd64_avx512bf16_broadcast);
+       bf16_f32_gemm_config.init.f32 = xnn_init_f32_minmax_scalar_params;
+@@ -304,7 +304,7 @@
+       bf16_f32_gemm_config.mr = 11;
+       bf16_f32_gemm_config.nr = 32;
+       bf16_f32_gemm_config.log2_kr = 1;
+-    #endif  // XNN_ENABLE_AVX512BF16
++    #endif  // XNN_ENABLE_ASSEMBLY && XNN_ENABLE_AVX512BF16
+   }
+   assert(bf16_f32_gemm_config.mr <= XNN_MAX_MR);
+ #endif  // XNN_ARCH_ARM64 && XNN_ENABLE_KLEIDIAI
+@@ -707,7 +707,7 @@
+     const struct xnn_hardware_config* hardware_config = xnn_init_hardware_config();
+     assert(hardware_config != NULL);
+     (void) hardware_config;  // May be unused.
+-    #if XNN_ENABLE_AVX512F && XNN_ARCH_X86_64 && !XNN_PLATFORM_WINDOWS
++    #if XNN_ENABLE_ASSEMBLY && XNN_ENABLE_AVX512F && XNN_ARCH_X86_64 && !XNN_PLATFORM_WINDOWS
+       if ((!consistent_arithmetic && hardware_config->arch_flags & xnn_arch_x86_avx512f)) {
+         f32_gemm_config->minmax.gemm[XNN_MR_TO_INDEX(1)] = xnn_init_hmp_gemm_ukernel((xnn_gemm_ukernel_fn) xnn_f32_gemm_minmax_ukernel_1x32c2__asm_amd64_avx512f_broadcast);
+         f32_gemm_config->minmax.gemm[XNN_MR_TO_INDEX(5)] = xnn_init_hmp_gemm_ukernel((xnn_gemm_ukernel_fn) xnn_f32_gemm_minmax_ukernel_5x32c2__asm_amd64_avx512f_broadcast);
+@@ -1417,7 +1417,7 @@
+     const struct xnn_hardware_config* hardware_config = xnn_init_hardware_config();
+     assert(hardware_config != NULL);
+     (void) hardware_config;  // May be unused.
+-    #if XNN_ENABLE_AVX512F && XNN_ARCH_X86_64 && !XNN_PLATFORM_WINDOWS
++    #if XNN_ENABLE_ASSEMBLY && XNN_ENABLE_AVX512F && XNN_ARCH_X86_64 && !XNN_PLATFORM_WINDOWS
+       if ((!consistent_arithmetic && hardware_config->arch_flags & xnn_arch_x86_avx512f)) {
+         f32_gemm_nr2_config->minmax.gemm[XNN_MR_TO_INDEX(1)] = xnn_init_hmp_gemm_ukernel((xnn_gemm_ukernel_fn) xnn_f32_gemm_minmax_ukernel_1x16c2__asm_amd64_avx512f_broadcast);
+         f32_gemm_nr2_config->minmax.gemm[XNN_MR_TO_INDEX(10)] = xnn_init_hmp_gemm_ukernel((xnn_gemm_ukernel_fn) xnn_f32_gemm_minmax_ukernel_10x16c2__asm_amd64_avx512f_broadcast);
+@@ -3142,7 +3142,7 @@
+     const struct xnn_hardware_config* hardware_config = xnn_init_hardware_config();
+     assert(hardware_config != NULL);
+     (void) hardware_config;  // May be unused.
+-    #if XNN_ENABLE_AVX512VNNI && XNN_ARCH_X86_64 && !XNN_PLATFORM_WINDOWS
++    #if XNN_ENABLE_ASSEMBLY && XNN_ENABLE_AVX512VNNI && XNN_ARCH_X86_64 && !XNN_PLATFORM_WINDOWS
+       if ((hardware_config->arch_flags & xnn_arch_x86_avx512vnni)) {
+         qdu8_f32_qc8w_gemm_config.arch = xnn_arch_x86_avx512vnni;
+         qdu8_f32_qc8w_gemm_config.minmax.dqgemm[XNN_MR_TO_INDEX(1)] = xnn_init_hmp_dqgemm_ukernel((xnn_dqgemm_ukernel_fn) xnn_qd8_f32_qc8w_gemm_minmax_ukernel_1x64c4__asm_amd64_avx512vnni);
+@@ -5068,7 +5068,7 @@
+     return NULL;
+   }
+   XNN_INIT_ONCE(bf16_f32_gemm);
+-  return &bf16_f32_gemm_config;
++  return bf16_f32_gemm_config.mr ? &bf16_f32_gemm_config : NULL;
+ }
+
+ const struct xnn_gemm_config* xnn_init_pf32_gemm_config() {
