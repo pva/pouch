@@ -1,0 +1,30 @@
+Fix bf16 gemm config when there are no kernels
+
+Upstream: https://github.com/google/XNNPACK/commit/87730c125b45180acb1bb57010b8659ee8e9660b
+
+Backport both the FP16 and BF16 checks. A zero mr (microkernel row tile
+size) means no kernel was selected, even if the CPU supports the format.
+Return NULL so operator creation reports xnn_status_unsupported_hardware
+instead of using an empty configuration. This also handles BF16 with
+assembly disabled, for which this snapshot has no intrinsics fallback.
+
+--- a/src/configs/gemm-config.c
++++ b/src/configs/gemm-config.c
+@@ -5050,7 +5050,7 @@
+     return NULL;
+   }
+   XNN_INIT_ONCE(f16_gemm);
+-  return &f16_gemm_config;
++  return f16_gemm_config.mr ? &f16_gemm_config : NULL;
+ }
+
+ const struct xnn_gemm_config* xnn_init_pf16_gemm_config() {
+@@ -5068,7 +5068,7 @@
+     return NULL;
+   }
+   XNN_INIT_ONCE(bf16_f32_gemm);
+-  return &bf16_f32_gemm_config;
++  return bf16_f32_gemm_config.mr ? &bf16_f32_gemm_config : NULL;
+ }
+
+ const struct xnn_gemm_config* xnn_init_pf32_gemm_config() {

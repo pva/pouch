@@ -2,6 +2,8 @@ Avoid an ambiguous std::isnan overload for native _Float16 in C++17.
 
 Convert to float explicitly, as the unary microkernel tester already does.
 
+Upstream: https://github.com/google/XNNPACK/commit/58760a2a8e9836b7ff08b8fa018130272edf8000
+
 --- a/test/vbinary-microkernel-tester.cc
 +++ b/test/vbinary-microkernel-tester.cc
 @@ -64,7 +64,7 @@

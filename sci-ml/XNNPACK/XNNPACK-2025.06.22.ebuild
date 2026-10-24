@@ -39,6 +39,8 @@ PATCHES=(
 	"${FILESDIR}/${P}-cmake-shared-static.patch"
 	"${FILESDIR}/${P}-f16-isnan.patch"
 	"${FILESDIR}/${P}-respect-assembly.patch"
+	"${FILESDIR}/${P}-bf16-respect-assembly.patch"
+	"${FILESDIR}/${P}-gemm-no-kernels.patch"
 )
 
 src_configure() {
