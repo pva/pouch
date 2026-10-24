@@ -1,0 +1,13 @@
+Use the installed cpuinfo CMake package for native Linux builds as well.
+
+--- a/cmake/external/onnxruntime_external_deps.cmake
++++ b/cmake/external/onnxruntime_external_deps.cmake
+@@ -342,7 +342,7 @@
+   set(CPUINFO_BUILD_UNIT_TESTS OFF CACHE INTERNAL "")
+   set(CPUINFO_BUILD_MOCK_TESTS OFF CACHE INTERNAL "")
+   set(CPUINFO_BUILD_BENCHMARKS OFF CACHE INTERNAL "")
+-  if(onnxruntime_USE_VCPKG AND NOT APPLE)
++  if((onnxruntime_USE_VCPKG OR CMAKE_SYSTEM_NAME STREQUAL "Linux") AND NOT APPLE)
+     find_package(cpuinfo CONFIG REQUIRED)
+   else()
+     if (onnxruntime_target_platform STREQUAL "ARM64EC" OR onnxruntime_target_platform STREQUAL "ARM64")

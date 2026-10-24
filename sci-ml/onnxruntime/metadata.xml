@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<!-- maintainer-needed -->
+	<use>
+		<flag name="onednn">Enable the oneDNN CPU execution provider</flag>
+		<flag name="xnnpack">Enable the XNNPACK CPU execution provider</flag>
+	</use>
+	<upstream>
+		<remote-id type="github">microsoft/onnxruntime</remote-id>
+	</upstream>
+</pkgmetadata>
