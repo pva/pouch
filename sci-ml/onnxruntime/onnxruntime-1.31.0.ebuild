@@ -49,7 +49,7 @@ BDEPEND="${PYTHON_DEPS}
 "
 
 CMAKE_USE_DIR="${S}/cmake"
-DOCS=( README.md ThirdPartyNotices.txt )
+DOCS=( "${S}/README.md" "${S}/ThirdPartyNotices.txt" )
 
 PATCHES=(
 	"${WORKDIR}/${P}-onnx-1.23.patch"
