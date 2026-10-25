@@ -51,11 +51,15 @@ BDEPEND="${PYTHON_DEPS}
 CMAKE_USE_DIR="${S}/cmake"
 DOCS=( "${S}/README.md" "${S}/ThirdPartyNotices.txt" )
 
+# The oneDNN provider is a dlopen module and intentionally has no SONAME.
+QA_SONAME="usr/lib[^/]*/libonnxruntime_providers_dnnl\\.so"
+
 PATCHES=(
 	"${WORKDIR}/${P}-onnx-1.23.patch"
 	"${FILESDIR}/${P}-system-cpuinfo.patch"
 	"${FILESDIR}/${P}-flatc-args.patch"
 	"${FILESDIR}/${P}-system-cpu-providers.patch"
+	"${FILESDIR}/${P}-dnnl-rpath.patch"
 )
 
 src_prepare() {
