@@ -1,0 +1,32 @@
+From 2890750e5753ed0bf053c600d476f8cda5a53efd Mon Sep 17 00:00:00 2001
+From: Peter Volkov <peter.volkov@gmail.com>
+Date: Sun, 25 Oct 2026 21:04:22 +0300
+Subject: [PATCH 1/2] Link the oneDNN provider explicitly with OpenMP
+
+The provider calls omp_set_num_threads() and omp_get_max_threads()
+directly, but does not declare its OpenMP dependency. On Linux, these
+calls can resolve through oneDNN's runtime dependencies, while linking
+with -Wl,-z,defs fails.
+
+Find OpenMP and link OpenMP::OpenMP_CXX to provide the required compiler
+flags, include paths, and runtime libraries.
+---
+ cmake/onnxruntime_providers_dnnl.cmake | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/cmake/onnxruntime_providers_dnnl.cmake b/cmake/onnxruntime_providers_dnnl.cmake
+index 07926a34d5..e5831c60ce 100644
+--- a/cmake/onnxruntime_providers_dnnl.cmake
++++ b/cmake/onnxruntime_providers_dnnl.cmake
+@@ -20,6 +20,8 @@
+   target_include_directories(onnxruntime_providers_dnnl PRIVATE ${ONNXRUNTIME_ROOT} ${DNNL_INCLUDE_DIR} ${DNNL_OCL_INCLUDE_DIR})
+   # ${CMAKE_CURRENT_BINARY_DIR} is so that #include "onnxruntime_config.h" inside tensor_shape.h is found
+   target_link_libraries(onnxruntime_providers_dnnl PRIVATE dnnl ${ONNXRUNTIME_PROVIDERS_SHARED} Boost::mp11 ${ABSEIL_LIBS} ${GSL_TARGET} safeint_interface Eigen3::Eigen)
++  find_package(OpenMP REQUIRED COMPONENTS CXX)
++  target_link_libraries(onnxruntime_providers_dnnl PRIVATE OpenMP::OpenMP_CXX)
+   install(FILES ${PROJECT_SOURCE_DIR}/../include/onnxruntime/core/providers/dnnl/dnnl_provider_options.h
+     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/onnxruntime/)
+   set_target_properties(onnxruntime_providers_dnnl PROPERTIES FOLDER "ONNXRuntime")
+-- 
+2.55.0
+

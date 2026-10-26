@@ -56,10 +56,12 @@ QA_SONAME="usr/lib[^/]*/libonnxruntime_providers_dnnl\\.so"
 
 PATCHES=(
 	"${WORKDIR}/${P}-onnx-1.23.patch"
-	"${FILESDIR}/${P}-system-cpuinfo.patch"
 	"${FILESDIR}/${P}-flatc-args.patch"
-	"${FILESDIR}/${P}-system-cpu-providers.patch"
-	"${FILESDIR}/${P}-dnnl-rpath.patch"
+	"${FILESDIR}/0001-Allow-building-with-a-system-cpuinfo-library.patch"
+	"${FILESDIR}/0001-Link-the-oneDNN-provider-explicitly-with-OpenMP.patch"
+	"${FILESDIR}/0002-Allow-building-with-a-system-oneDNN-library.patch"
+	"${FILESDIR}/0001-Allow-building-with-system-XNNPACK-and-pthreadpool-l.patch"
+	"${FILESDIR}/0001-Let-CMake-manage-ORIGIN-RPATH-for-the-oneDNN-provide.patch"
 )
 
 src_prepare() {
@@ -91,6 +93,7 @@ src_configure() {
 		# Build the shared inference library with the selected CPU providers.
 		-Donnxruntime_BUILD_SHARED_LIB=ON
 		-Donnxruntime_BUILD_UNIT_TESTS=OFF
+		-Donnxruntime_USE_SYSTEM_CPUINFO=ON
 		-Donnxruntime_USE_DNNL=$(usex onednn)
 		-Donnxruntime_USE_SYSTEM_DNNL=$(usex onednn)
 		-Donnxruntime_USE_XNNPACK=$(usex xnnpack)

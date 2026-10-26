@@ -1,0 +1,42 @@
+From 96ef72cc757b9d477875112217238d203eea67c1 Mon Sep 17 00:00:00 2001
+From: Peter Volkov <peter.volkov@gmail.com>
+Date: Sun, 25 Oct 2026 18:34:41 +0300
+Subject: [PATCH] Allow building with a system cpuinfo library
+
+Add an opt-in onnxruntime_USE_SYSTEM_CPUINFO option so distribution
+builds can use an installed cpuinfo CMake package.
+
+Keep the option disabled by default, preserving the existing behavior.
+---
+ cmake/CMakeLists.txt                           | 1 +
+ cmake/external/onnxruntime_external_deps.cmake | 2 +-
+ 2 files changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/cmake/CMakeLists.txt b/cmake/CMakeLists.txt
+index 90143738f5..9ff169d75e 100644
+--- a/cmake/CMakeLists.txt
++++ b/cmake/CMakeLists.txt
+@@ -329,6 +329,7 @@ option(onnxruntime_EXTERNAL_TRANSFORMER_SRC_PATH "Path to external transformer s
+ option(onnxruntime_ENABLE_CUDA_PROFILING "Enable CUDA kernel profiling" OFF)
+ 
+ option(onnxruntime_ENABLE_CPUINFO "Enable cpuinfo" ON)
++option(onnxruntime_USE_SYSTEM_CPUINFO "Use an installed cpuinfo library" OFF)
+ 
+ # ATen fallback support
+ option(onnxruntime_ENABLE_ATEN "Enable ATen fallback" OFF)
+diff --git a/cmake/external/onnxruntime_external_deps.cmake b/cmake/external/onnxruntime_external_deps.cmake
+index 946d1c4d68..7ed9553493 100644
+--- a/cmake/external/onnxruntime_external_deps.cmake
++++ b/cmake/external/onnxruntime_external_deps.cmake
+@@ -365,7 +365,7 @@ if (CPUINFO_SUPPORTED)
+   set(CPUINFO_BUILD_UNIT_TESTS OFF CACHE INTERNAL "")
+   set(CPUINFO_BUILD_MOCK_TESTS OFF CACHE INTERNAL "")
+   set(CPUINFO_BUILD_BENCHMARKS OFF CACHE INTERNAL "")
+-  if(onnxruntime_USE_VCPKG AND NOT APPLE)
++  if(onnxruntime_USE_SYSTEM_CPUINFO OR (onnxruntime_USE_VCPKG AND NOT APPLE))
+     find_package(cpuinfo CONFIG REQUIRED)
+   else()
+     if (onnxruntime_target_platform STREQUAL "ARM64EC" OR onnxruntime_target_platform STREQUAL "ARM64")
+-- 
+2.55.0
+

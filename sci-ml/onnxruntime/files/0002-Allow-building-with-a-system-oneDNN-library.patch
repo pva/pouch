@@ -1,0 +1,82 @@
+From ca99d4021b088af99b5cce258ff06b8f214e2ede Mon Sep 17 00:00:00 2001
+From: Peter Volkov <peter.volkov@gmail.com>
+Date: Sun, 25 Oct 2026 21:08:01 +0300
+Subject: [PATCH 2/2] Allow building with a system oneDNN library
+
+Add an opt-in onnxruntime_USE_SYSTEM_DNNL option to use an installed
+oneDNN CMake package instead of downloading and building oneDNN.
+Keep the bundled dependency as the default.
+
+Require a shared library with the OpenMP CPU runtime and document
+the concurrent-execution requirement. Use the imported target for
+linking and select the runtime library by configuration, preserving
+its SONAME filename on Unix when copying it into the Python package.
+---
+ cmake/CMakeLists.txt                   |  1 +
+ cmake/external/dnnl.cmake              | 21 +++++++++++++++++++++
+ cmake/onnxruntime_providers_dnnl.cmake |  5 ++++-
+ 3 files changed, 26 insertions(+), 1 deletion(-)
+
+diff --git a/cmake/CMakeLists.txt b/cmake/CMakeLists.txt
+index 90143738f5..1f9d32d669 100644
+--- a/cmake/CMakeLists.txt
++++ b/cmake/CMakeLists.txt
+@@ -83,6 +83,7 @@ option(onnxruntime_BUILD_QNN_EP_STATIC_LIB "Build with QNN EP as a static librar
+ option(onnxruntime_USE_SNPE "Build with SNPE support" OFF)
+ option(onnxruntime_USE_RKNPU "Build with RKNPU support" OFF)
+ option(onnxruntime_USE_DNNL "Build with DNNL support" OFF)
++option(onnxruntime_USE_SYSTEM_DNNL "Use an installed shared oneDNN library (OpenMP, concurrent execution enabled)" OFF)
+ option(onnxruntime_USE_JSEP "Build with JavaScript implemented kernels support" OFF)
+ option(onnxruntime_USE_SVE "Build with SVE support in MLAS" OFF)
+ option(onnxruntime_USE_RVV "Build with RISC-V Vector support in MLAS" OFF)
+diff --git a/cmake/external/dnnl.cmake b/cmake/external/dnnl.cmake
+index 9eb5fed7a1..01dd6fe1fa 100644
+--- a/cmake/external/dnnl.cmake
++++ b/cmake/external/dnnl.cmake
+@@ -35,6 +35,27 @@ elseif(onnxruntime_USE_DNNL AND onnxruntime_DNNL_AARCH64_RUNTIME STREQUAL "acl"
+   set(DNNL_AARCH64_CMAKE_ARGS "-DDNNL_AARCH64_USE_ACL=ON")
+ endif()
+ 
++if(onnxruntime_USE_SYSTEM_DNNL)
++  find_package(dnnl 3.0.1 CONFIG REQUIRED)
++  get_target_property(_dnnl_target_type DNNL::dnnl TYPE)
++  if(NOT _dnnl_target_type STREQUAL "SHARED_LIBRARY")
++    message(FATAL_ERROR "onnxruntime_USE_SYSTEM_DNNL requires a shared oneDNN library.")
++  endif()
++  if(NOT DNNL_CPU_RUNTIME STREQUAL "OMP")
++    message(FATAL_ERROR "onnxruntime_USE_SYSTEM_DNNL requires oneDNN built with the OpenMP CPU runtime.")
++  endif()
++
++  # Cached primitives may run on a different thread, requiring DNNL_ENABLE_CONCURRENT_EXEC=ON
++  # (ONEDNN_ENABLE_CONCURRENT_EXEC in newer oneDNN). The package does not expose this setting.
++  add_library(dnnl ALIAS DNNL::dnnl)
++  if(WIN32)
++    set(DNNL_DLL_PATH "$<TARGET_FILE:DNNL::dnnl>")
++  else()
++    set(DNNL_DLL_PATH "$<TARGET_SONAME_FILE:DNNL::dnnl>")
++  endif()
++  return()
++endif()
++
+ if (onnxruntime_USE_DNNL)
+   set(DNNL_SOURCE ${CMAKE_CURRENT_BINARY_DIR}/dnnl/src/dnnl/src)
+   set(DNNL_INSTALL ${CMAKE_CURRENT_BINARY_DIR}/dnnl/install)
+diff --git a/cmake/onnxruntime_providers_dnnl.cmake b/cmake/onnxruntime_providers_dnnl.cmake
+index e5831c60ce..ee17e7a78f 100644
+--- a/cmake/onnxruntime_providers_dnnl.cmake
++++ b/cmake/onnxruntime_providers_dnnl.cmake
+@@ -16,7 +16,10 @@
+     target_compile_options(onnxruntime_providers_dnnl PRIVATE  "/analyze:stacksize 131072")
+   endif()
+ 
+-  add_dependencies(onnxruntime_providers_dnnl onnxruntime_providers_shared project_dnnl ${onnxruntime_EXTERNAL_DEPENDENCIES})
++  add_dependencies(onnxruntime_providers_dnnl onnxruntime_providers_shared ${onnxruntime_EXTERNAL_DEPENDENCIES})
++  if(NOT onnxruntime_USE_SYSTEM_DNNL)
++    add_dependencies(onnxruntime_providers_dnnl project_dnnl)
++  endif()
+   target_include_directories(onnxruntime_providers_dnnl PRIVATE ${ONNXRUNTIME_ROOT} ${DNNL_INCLUDE_DIR} ${DNNL_OCL_INCLUDE_DIR})
+   # ${CMAKE_CURRENT_BINARY_DIR} is so that #include "onnxruntime_config.h" inside tensor_shape.h is found
+   target_link_libraries(onnxruntime_providers_dnnl PRIVATE dnnl ${ONNXRUNTIME_PROVIDERS_SHARED} Boost::mp11 ${ABSEIL_LIBS} ${GSL_TARGET} safeint_interface Eigen3::Eigen)
+-- 
+2.55.0
+

@@ -1,0 +1,122 @@
+From 5cd036663dce13d0e68c3fad0695ae8418752a19 Mon Sep 17 00:00:00 2001
+From: Peter Volkov <peter.volkov@gmail.com>
+Date: Mon, 26 Oct 2026 08:53:40 +0300
+Subject: [PATCH] Allow building with system XNNPACK and pthreadpool libraries
+
+Add an opt-in onnxruntime_USE_SYSTEM_XNNPACK option to reuse installed
+shared libraries on Unix. Keep the existing bundled and vcpkg paths
+as the default.
+
+Create imported targets with the required include paths and thread
+dependencies, and skip the bundled dependency setup. Restrict library
+discovery to shared libraries and reject explicit static archive overrides,
+as static XNNPACK requires additional microkernel and platform dependencies.
+---
+ cmake/CMakeLists.txt                          |  7 ++++
+ .../external/onnxruntime_external_deps.cmake  |  2 +-
+ .../external/onnxruntime_system_xnnpack.cmake | 35 +++++++++++++++++++
+ cmake/external/xnnpack.cmake                  | 11 ++++++
+ 4 files changed, 54 insertions(+), 1 deletion(-)
+ create mode 100644 cmake/external/onnxruntime_system_xnnpack.cmake
+
+diff --git a/cmake/CMakeLists.txt b/cmake/CMakeLists.txt
+index 90143738f5..d7b2587c57 100644
+--- a/cmake/CMakeLists.txt
++++ b/cmake/CMakeLists.txt
+@@ -213,6 +213,7 @@ set(ONNXRUNTIME_TELEMETRY_TENANT_TOKEN "" CACHE STRING "Override the compiled-in
+ cmake_dependent_option(onnxruntime_USE_MIMALLOC "Override new/delete and arena allocator with mimalloc" OFF "WIN32;NOT onnxruntime_USE_CUDA;NOT onnxruntime_USE_OPENVINO" OFF)
+ option(onnxruntime_USE_CANN "Build with CANN support" OFF)
+ option(onnxruntime_USE_XNNPACK "Build with XNNPACK support. Provides an alternative math library on ARM, WebAssembly and x86." OFF)
++option(onnxruntime_USE_SYSTEM_XNNPACK "Use installed shared XNNPACK and pthreadpool libraries on Unix" OFF)
+ option(onnxruntime_USE_WEBNN "Build with WebNN support. Enable hardware acceleration in web browsers." OFF)
+ option(onnxruntime_USE_WEBGPU "Build with WebGPU support. Enable WebGPU via C/C++ interface." OFF)
+ option(onnxruntime_USE_EP_API_ADAPTERS "Build EP (e.g. WebGPU) as a plugin EP library using EP API adapters" OFF)
+@@ -2063,6 +2064,12 @@ else()
+         target_include_directories(safeint_interface INTERFACE ${safeint_SOURCE_DIR})\n\
+         ")
+     include("${CMAKE_CURRENT_LIST_DIR}/onnxruntime_telemetry_config.cmake")
++    if(onnxruntime_USE_XNNPACK AND onnxruntime_USE_SYSTEM_XNNPACK)
++      string(APPEND PROJECT_CONFIG_CONTENT
++        "include(\"\${CMAKE_CURRENT_LIST_DIR}/onnxruntime_system_xnnpack.cmake\")\n")
++      install(FILES "${PROJECT_SOURCE_DIR}/external/onnxruntime_system_xnnpack.cmake"
++        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
++    endif()
+   endif()
+ 
+   string(APPEND PROJECT_CONFIG_CONTENT
+diff --git a/cmake/external/onnxruntime_external_deps.cmake b/cmake/external/onnxruntime_external_deps.cmake
+index 946d1c4d68..03030a8d57 100644
+--- a/cmake/external/onnxruntime_external_deps.cmake
++++ b/cmake/external/onnxruntime_external_deps.cmake
+@@ -621,7 +621,7 @@ if (onnxruntime_USE_XNNPACK)
+     message(FATAL_ERROR "XNNPACK EP requires the internal NHWC contrib ops to be available "
+                          "but onnxruntime_DISABLE_CONTRIB_OPS is ON")
+   endif()
+-  if(onnxruntime_USE_VCPKG)
++  if(onnxruntime_USE_VCPKG AND NOT onnxruntime_USE_SYSTEM_XNNPACK)
+      FIND_PATH(XNNPACK_HDR xnnpack.h PATH_SUFFIXES include)
+      IF(NOT XNNPACK_HDR)
+        MESSAGE(FATAL_ERROR "Cannot find xnnpack")
+diff --git a/cmake/external/onnxruntime_system_xnnpack.cmake b/cmake/external/onnxruntime_system_xnnpack.cmake
+new file mode 100644
+index 0000000000..ce751f5e07
+--- /dev/null
++++ b/cmake/external/onnxruntime_system_xnnpack.cmake
+@@ -0,0 +1,35 @@
++# Copyright (c) Microsoft Corporation. All rights reserved.
++# Licensed under the MIT License.
++
++if(NOT UNIX OR CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
++  message(FATAL_ERROR "System XNNPACK requires a Unix platform with shared libraries.")
++endif()
++
++find_path(XNNPACK_INCLUDE_DIR NAMES xnnpack.h REQUIRED)
++find_path(PTHREADPOOL_INCLUDE_DIR NAMES pthreadpool.h REQUIRED)
++block(SCOPE_FOR VARIABLES)
++  set(CMAKE_FIND_LIBRARY_SUFFIXES "${CMAKE_SHARED_LIBRARY_SUFFIX}")
++  find_library(XNNPACK_LIBRARY NAMES XNNPACK REQUIRED)
++  find_library(PTHREADPOOL_LIBRARY NAMES pthreadpool REQUIRED)
++endblock()
++foreach(_xnnpack_library IN ITEMS XNNPACK_LIBRARY PTHREADPOOL_LIBRARY)
++  if("${${_xnnpack_library}}" MATCHES "\\.a$")
++    message(FATAL_ERROR "${_xnnpack_library} must refer to a shared library for system XNNPACK.")
++  endif()
++endforeach()
++find_package(Threads REQUIRED)
++
++if(NOT TARGET onnxruntime::system_pthreadpool)
++  add_library(onnxruntime::system_pthreadpool SHARED IMPORTED)
++  set_target_properties(onnxruntime::system_pthreadpool PROPERTIES
++    IMPORTED_LOCATION "${PTHREADPOOL_LIBRARY}"
++    INTERFACE_INCLUDE_DIRECTORIES "${PTHREADPOOL_INCLUDE_DIR}"
++    INTERFACE_LINK_LIBRARIES Threads::Threads)
++endif()
++if(NOT TARGET onnxruntime::system_xnnpack)
++  add_library(onnxruntime::system_xnnpack SHARED IMPORTED)
++  set_target_properties(onnxruntime::system_xnnpack PROPERTIES
++    IMPORTED_LOCATION "${XNNPACK_LIBRARY}"
++    INTERFACE_INCLUDE_DIRECTORIES "${XNNPACK_INCLUDE_DIR}"
++    INTERFACE_LINK_LIBRARIES onnxruntime::system_pthreadpool)
++endif()
+diff --git a/cmake/external/xnnpack.cmake b/cmake/external/xnnpack.cmake
+index 59cc26316a..509b58e6c7 100644
+--- a/cmake/external/xnnpack.cmake
++++ b/cmake/external/xnnpack.cmake
+@@ -1,3 +1,14 @@
++if(onnxruntime_USE_SYSTEM_XNNPACK)
++  include("${CMAKE_CURRENT_LIST_DIR}/onnxruntime_system_xnnpack.cmake")
++  add_library(XNNPACK ALIAS onnxruntime::system_xnnpack)
++  add_library(pthreadpool ALIAS onnxruntime::system_pthreadpool)
++
++  # System packages must provide the bundled API and the cpuinfo lifecycle changes in
++  # release_cpuinfo_after_hardware_config.patch.
++  set(onnxruntime_EXTERNAL_LIBRARIES_XNNPACK onnxruntime::system_xnnpack onnxruntime::system_pthreadpool)
++  return()
++endif()
++
+ set(XNNPACK_USE_SYSTEM_LIBS ON CACHE INTERNAL "")
+ set(XNNPACK_BUILD_TESTS OFF CACHE INTERNAL "")
+ set(XNNPACK_BUILD_BENCHMARKS OFF CACHE INTERNAL "")
+-- 
+2.55.0
+

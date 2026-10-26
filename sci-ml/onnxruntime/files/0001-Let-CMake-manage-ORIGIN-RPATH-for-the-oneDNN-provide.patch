@@ -1,0 +1,40 @@
+From 627a1265e456af5f930a2f542212561e9019dc28 Mon Sep 17 00:00:00 2001
+From: Peter Volkov <peter.volkov@gmail.com>
+Date: Sun, 25 Oct 2026 15:08:52 +0300
+Subject: [PATCH] Let CMake manage $ORIGIN RPATH for the oneDNN provider
+
+With Ninja, the raw -rpath=$ORIGIN flag introduced in fc6ac5bfacc4
+("dnnl fixes (#7202)") is expanded by the shell, losing $ORIGIN
+when the environment variable is unset.
+
+Use CMake's RPATH properties to handle escaping and installation.
+Explicitly include $ORIGIN in the build RPATH so the provider can
+find libdnnl.so.3 when both libraries are copied into the Python
+package without running cmake --install.
+
+Make automatically generated build-tree paths relative and set
+the install RPATH to $ORIGIN.
+---
+ cmake/onnxruntime_providers_dnnl.cmake | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/cmake/onnxruntime_providers_dnnl.cmake b/cmake/onnxruntime_providers_dnnl.cmake
+index 07926a34d5..59b2199d5c 100644
+--- a/cmake/onnxruntime_providers_dnnl.cmake
++++ b/cmake/onnxruntime_providers_dnnl.cmake
+@@ -42,7 +42,11 @@
+       BUILD_WITH_INSTALL_RPATH TRUE
+       INSTALL_RPATH_USE_LINK_PATH FALSE)
+   elseif(UNIX)
+-    set_property(TARGET onnxruntime_providers_dnnl APPEND_STRING PROPERTY LINK_FLAGS "-Xlinker --version-script=${ONNXRUNTIME_ROOT}/core/providers/dnnl/version_script.lds -Xlinker --gc-sections -Xlinker -rpath=\$ORIGIN")
++    set_property(TARGET onnxruntime_providers_dnnl APPEND_STRING PROPERTY LINK_FLAGS "-Xlinker --version-script=${ONNXRUNTIME_ROOT}/core/providers/dnnl/version_script.lds -Xlinker --gc-sections")
++    set_target_properties(onnxruntime_providers_dnnl PROPERTIES
++      BUILD_RPATH "$ORIGIN"
++      BUILD_RPATH_USE_ORIGIN TRUE
++      INSTALL_RPATH "$ORIGIN")
+   elseif(WIN32)
+     set_property(TARGET onnxruntime_providers_dnnl APPEND_STRING PROPERTY LINK_FLAGS "-DEF:${ONNXRUNTIME_ROOT}/core/providers/dnnl/symbols.def")
+   else()
+-- 
+2.55.0
+
