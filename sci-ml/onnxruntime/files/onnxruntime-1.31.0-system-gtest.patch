@@ -1,0 +1,26 @@
+Allow unit tests to use an installed GoogleTest CMake package.
+
+Add an opt-in onnxruntime_USE_SYSTEM_GTEST option. Require the installed
+package when enabled, preserving the bundled dependency setup by default.
+
+--- a/cmake/CMakeLists.txt
++++ b/cmake/CMakeLists.txt
+@@ -94,4 +94,5 @@
+ option(onnxruntime_BUILD_UNIT_TESTS "Build ONNXRuntime unit tests" ON)
++option(onnxruntime_USE_SYSTEM_GTEST "Use an installed GoogleTest library for unit tests" OFF)
+ option(onnxruntime_RUN_MLAS_TESTS "Run a targeted subset of MLAS unit tests with CTest" OFF)
+ # Declare both prerequisites before evaluating this dependent option on a fresh configure.
+ # Enable ONNX Runtime CUDA EP's internal unit tests that directly access the EP's internal functions instead of through
+--- a/cmake/external/onnxruntime_external_deps.cmake
++++ b/cmake/external/onnxruntime_external_deps.cmake
+@@ -50,7 +50,9 @@
+ )
+ onnxruntime_fetchcontent_makeavailable(re2)
+ 
+-if (onnxruntime_BUILD_UNIT_TESTS)
++if (onnxruntime_BUILD_UNIT_TESTS AND onnxruntime_USE_SYSTEM_GTEST)
++  find_package(GTest 1.14.0...<2.0.0 CONFIG REQUIRED)
++elseif (onnxruntime_BUILD_UNIT_TESTS)
+   # WebAssembly threading support in Node.js is still an experimental feature and
+   # not working properly with googletest suite.
+   if (CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
