@@ -7,7 +7,7 @@ DISTUTILS_EXT=1
 DISTUTILS_USE_PEP517=scikit-build-core
 PYTHON_COMPAT=( python3_{12..14} )
 
-inherit distutils-r1 cmake
+inherit distutils-r1 cmake flag-o-matic
 
 DESCRIPTION="Open Neural Network Exchange (ONNX)"
 HOMEPAGE="https://onnx.ai/ https://github.com/onnx/onnx"
@@ -19,7 +19,6 @@ LICENSE="Apache-2.0 BSD MIT"
 SLOT="0/${PV}"
 KEYWORDS="~amd64 ~arm64"
 IUSE="disableStaticReg"
-RESTRICT="test"
 
 RDEPEND="
 	dev-cpp/abseil-cpp:=
@@ -29,12 +28,22 @@ RDEPEND="
 	>=dev-python/protobuf-6.31.1[${PYTHON_USEDEP}]
 	>=dev-python/typing-extensions-4.7.1[${PYTHON_USEDEP}]
 "
-DEPEND="${RDEPEND}"
+DEPEND="${RDEPEND}
+	test? ( dev-cpp/gtest )
+"
 BDEPEND="
 	>=dev-cpp/robin-map-1.3.0
 	>=dev-libs/protobuf-31.1[protoc(+)]
 	>=dev-python/nanobind-2.13[${PYTHON_USEDEP}]
+	test? (
+		dev-python/packaging[${PYTHON_USEDEP}]
+		dev-python/pillow[${PYTHON_USEDEP}]
+	)
 "
+
+EPYTEST_PLUGINS=()
+EPYTEST_XDIST=1
+distutils_enable_tests pytest
 
 PATCHES=(
 	"${FILESDIR}/${P}-released-opset.patch"
@@ -47,6 +56,10 @@ src_prepare() {
 }
 
 src_configure() {
+	# cmake.eclass's default RelWithDebInfo build lacks CMake's -DNDEBUG,
+	# so debug checks stay enabled. Disable them as in distutils-r1.eclass.
+	use debug || append-cppflags -DNDEBUG
+
 	# Configure the shared C++ libraries. The Python extension is configured
 	# separately by scikit-build-core when python_compile() builds a wheel.
 	python_setup
@@ -54,7 +67,7 @@ src_configure() {
 		-DBUILD_SHARED_LIBS=ON
 		-DFETCHCONTENT_FULLY_DISCONNECTED=ON
 		-DONNX_BUILD_PYTHON=OFF
-		-DONNX_BUILD_TESTS=OFF
+		-DONNX_BUILD_TESTS=$(usex test)
 		-DONNX_INSTALL=ON
 		-DONNX_USE_PROTOBUF_SHARED_LIBS=ON
 		-DONNX_USE_LITE_PROTO=ON
@@ -72,6 +85,8 @@ python_compile() {
 		"${mycmakeargs[@]}"
 		-DBUILD_SHARED_LIBS=OFF
 		-DONNX_BUILD_PYTHON=ON
+		# C++ tests are built once, against the shared library.
+		-DONNX_BUILD_TESTS=OFF
 		-DONNX_INSTALL=OFF
 		-DNB_USE_SUBMODULE_DEPS=OFF
 		-DPython3_EXECUTABLE="${PYTHON}"
@@ -89,6 +104,18 @@ python_compile() {
 src_compile() {
 	cmake_src_compile
 	distutils-r1_src_compile
+}
+
+python_test() {
+	# python -m pytest puts the cwd on sys.path, so run outside ${S}, where
+	# the onnx/ source directory would shadow the built package.
+	cd "${T}" || die
+	epytest "${S}/tests/python"
+}
+
+src_test() {
+	cmake_src_test
+	distutils-r1_src_test
 }
 
 src_install() {
