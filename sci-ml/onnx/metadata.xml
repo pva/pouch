@@ -3,7 +3,7 @@
 <pkgmetadata>
 	<!-- maintainer-needed -->
 	<use>
-		<flag name="disableStaticReg">Disable static registration of operator schemas</flag>
+		<flag name="disableStaticReg">Disable static registration of operator schemas for shared lib</flag>
 	</use>
 	<upstream>
 		<remote-id type="github">onnx/onnx</remote-id>

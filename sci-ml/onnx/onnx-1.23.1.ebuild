@@ -77,6 +77,9 @@ python_compile() {
 		-DPython3_EXECUTABLE="${PYTHON}"
 		-DPython_EXECUTABLE="${PYTHON}"
 		-Dnanobind_DIR="$(python_get_sitedir)/nanobind/cmake"
+		# Override USE=disableStaticReg: the Python bindings never register
+		# operator schemas themselves and rely on the static registration.
+		-DONNX_DISABLE_STATIC_REGISTRATION=OFF
 	)
 	# Override the source-tree build directory from pyproject.toml.
 	local -x SKBUILD_BUILD_DIR="${BUILD_DIR}/build"
