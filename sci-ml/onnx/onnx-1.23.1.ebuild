@@ -109,6 +109,11 @@ src_compile() {
 }
 
 python_test() {
+	local EPYTEST_IGNORE=(
+		# Tests the docs generator, imported from ${S}/docs.
+		"${S}/tests/python/onnx_sphinx_test.py"
+	)
+
 	# python -m pytest puts the cwd on sys.path, so run outside ${S}, where
 	# the onnx/ source directory would shadow the built package.
 	cd "${T}" || die
