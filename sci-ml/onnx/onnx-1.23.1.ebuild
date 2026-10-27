@@ -52,6 +52,9 @@ PATCHES=(
 
 src_prepare() {
 	distutils-r1_src_prepare
+	# pyproject.toml always passes this Windows-only option, so CMake warns
+	# that it is unused.
+	sed -i '/^ONNX_USE_MSVC_STATIC_RUNTIME = /d' pyproject.toml || die
 	cmake_prepare
 }
 
@@ -65,7 +68,6 @@ src_configure() {
 	python_setup
 	mycmakeargs=(
 		-DBUILD_SHARED_LIBS=ON
-		-DFETCHCONTENT_FULLY_DISCONNECTED=ON
 		-DONNX_BUILD_PYTHON=OFF
 		-DONNX_BUILD_TESTS=$(usex test)
 		-DONNX_INSTALL=ON
