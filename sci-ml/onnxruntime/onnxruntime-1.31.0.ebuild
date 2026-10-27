@@ -5,7 +5,7 @@ EAPI=8
 
 PYTHON_COMPAT=( python3_{11..14} )
 
-inherit cmake python-any-r1
+inherit cmake flag-o-matic python-any-r1
 
 ONNX_PV=1.23.1
 
@@ -95,6 +95,11 @@ src_prepare() {
 }
 
 src_configure() {
+	# cmake.eclass's default RelWithDebInfo build lacks CMake's -DNDEBUG,
+	# so ONNX debug checks stay enabled and break model loading. Disable
+	# them, as in sci-ml/onnx.
+	append-cppflags -DNDEBUG
+
 	local mycmakeargs=(
 		--compile-no-warning-as-error
 		-DCMAKE_PROJECT_onnxruntime_INCLUDE="${FILESDIR}/${P}-system-deps.cmake"
