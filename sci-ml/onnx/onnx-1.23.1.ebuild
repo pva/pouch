@@ -116,6 +116,11 @@ python_test() {
 }
 
 src_test() {
+	# Without static registration the schema registry starts empty, so like
+	# upstream CI run only the tests that register schemas themselves.
+	if use disableStaticReg; then
+		local -x GTEST_FILTER='SchemaRegistrationTest*'
+	fi
 	cmake_src_test
 	distutils-r1_src_test
 }
