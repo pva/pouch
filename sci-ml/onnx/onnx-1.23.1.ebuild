@@ -48,6 +48,7 @@ distutils_enable_tests pytest
 PATCHES=(
 	"${FILESDIR}/${P}-released-opset.patch"
 	"${FILESDIR}/${P}-export-symbols.patch"
+	"${FILESDIR}/${P}-layernorm-axis.patch"
 )
 
 src_prepare() {
