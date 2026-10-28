@@ -100,6 +100,8 @@ src_configure() {
 	# so ONNX debug checks stay enabled and break model loading. Disable
 	# them, as in sci-ml/onnx.
 	append-cppflags -DNDEBUG
+	# Keep the old algorithm for std::generate_canonical to fix tests with GCC 16
+	append-cppflags -D_GLIBCXX_USE_OLD_GENERATE_CANONICAL
 
 	local mycmakeargs=(
 		--compile-no-warning-as-error
