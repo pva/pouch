@@ -63,6 +63,7 @@ PATCHES=(
 	"${WORKDIR}/${P}-onnx-1.23.patch"
 	"${FILESDIR}/${P}-flatc-args.patch"
 	"${FILESDIR}/${P}-system-gtest.patch"
+	"${FILESDIR}/${P}-nhwc-test-tolerance.patch"
 	"${FILESDIR}/0001-Allow-building-with-a-system-cpuinfo-library.patch"
 	"${FILESDIR}/0001-Link-the-oneDNN-provider-explicitly-with-OpenMP.patch"
 	"${FILESDIR}/0002-Allow-building-with-a-system-oneDNN-library.patch"

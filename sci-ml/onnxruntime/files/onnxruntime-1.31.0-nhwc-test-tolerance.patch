@@ -1,0 +1,33 @@
+Widen the tolerance of NhwcTransformerTests.ConvFloat_UsesNhwcOnlyWithKleidi.
+
+The test compares a Conv run at optimization Level 2 with the same Conv
+after the Level 3 layout optimizers. KleidiAI is Arm-only, so on x86 another
+layout optimizer takes the Conv and accumulates in a different order. With
+the fixed test seed one of 784 outputs then differs by about 26 ULP, just
+over the allowed 1e-6 + 1e-6 * |expected|:
+
+  expected -1.97602 (bffcee4f), got -1.97603 (bffcee69), diff: 3.09944e-06,
+  tol=2.97602e-06 idx=465. 1 of 784 differ
+
+Upstream widened FusedConvFloat_UsesNhwcOnlyWithKleidi to 1.25e-6 for the
+same drift in https://github.com/microsoft/onnxruntime/commit/ad8e25828658f84193cc510402c6aba93310f9c7
+but left this test at 1e-6. Use the same margin here.
+
+--- a/onnxruntime/test/optimizer/nhwc_transformer_test.cc
++++ b/onnxruntime/test/optimizer/nhwc_transformer_test.cc
+@@ -575,12 +575,14 @@
+     EXPECT_EQ(op_to_count["Transpose"], 2);
+   };
+ 
++  // As in FusedConvFloat_UsesNhwcOnlyWithKleidi, the Level 3 layout-optimized path can use a different
++  // FP accumulation order than the Level 2 baseline, so use the same slightly wider margin.
+   TransformerTester(build_test_case,
+                     check_nhwc_graph,
+                     TransformerLevel::Level2,
+                     TransformerLevel::Level3,
+                     /*opset_version*/ 12,
+-                    /*per_sample_tolerance*/ 1e-6,
++                    /*per_sample_tolerance*/ 1.25e-6,
+                     /*relative_per_sample_tolerance*/ 1e-6);
+ }
+ 
