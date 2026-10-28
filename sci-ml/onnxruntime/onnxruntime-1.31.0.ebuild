@@ -23,7 +23,9 @@ SRC_URI="
 LICENSE="MIT Apache-2.0 BSD Boost-1.0 MPL-2.0"
 SLOT="0/1"
 KEYWORDS="~amd64"
-IUSE="onednn test xnnpack"
+# USE=onednn is disabled: the oneDNN EP fails onnxruntime_provider_test
+# (a crash and wrong results) and needs fixing. Its code is commented out.
+IUSE="test xnnpack"
 RESTRICT="!test? ( test )"
 
 RDEPEND="
@@ -33,12 +35,12 @@ RDEPEND="
 	>=dev-libs/protobuf-31.1:=
 	>=dev-libs/re2-2024.07.02:=
 	>=sci-ml/onnx-${ONNX_PV}:=[-disableStaticReg]
-	onednn? ( >=sci-ml/oneDNN-3.0.1:=[openmp,-static-libs] )
 	xnnpack? (
 		>=dev-libs/pthreadpool-2025.05.14:=
 		>=sci-ml/XNNPACK-2025.06.22:=
 	)
 "
+#RDEPEND+=" onednn? ( >=sci-ml/oneDNN-3.0.1:=[openmp,-static-libs] )"
 DEPEND="${RDEPEND}
 	>=dev-cpp/eigen-3.4.1:3
 	>=dev-cpp/ms-gsl-4.2.1
@@ -57,7 +59,7 @@ CMAKE_USE_DIR="${S}/cmake"
 DOCS=( "${S}/README.md" "${S}/ThirdPartyNotices.txt" )
 
 # The oneDNN provider is a dlopen module and intentionally has no SONAME.
-QA_SONAME="usr/lib[^/]*/libonnxruntime_providers_dnnl\\.so"
+#QA_SONAME="usr/lib[^/]*/libonnxruntime_providers_dnnl\\.so"
 
 PATCHES=(
 	"${WORKDIR}/${P}-onnx-1.23.patch"
@@ -65,10 +67,10 @@ PATCHES=(
 	"${FILESDIR}/${P}-system-gtest.patch"
 	"${FILESDIR}/${P}-nhwc-test-tolerance.patch"
 	"${FILESDIR}/0001-Allow-building-with-a-system-cpuinfo-library.patch"
-	"${FILESDIR}/0001-Link-the-oneDNN-provider-explicitly-with-OpenMP.patch"
-	"${FILESDIR}/0002-Allow-building-with-a-system-oneDNN-library.patch"
+	#"${FILESDIR}/0001-Link-the-oneDNN-provider-explicitly-with-OpenMP.patch"
+	#"${FILESDIR}/0002-Allow-building-with-a-system-oneDNN-library.patch"
 	"${FILESDIR}/0001-Allow-building-with-system-XNNPACK-and-pthreadpool-l.patch"
-	"${FILESDIR}/0001-Let-CMake-manage-ORIGIN-RPATH-for-the-oneDNN-provide.patch"
+	#"${FILESDIR}/0001-Let-CMake-manage-ORIGIN-RPATH-for-the-oneDNN-provide.patch"
 )
 
 src_prepare() {
@@ -117,8 +119,8 @@ src_configure() {
 		-Donnxruntime_MATERIALIZE_ONNX_NODE_TESTS=OFF
 		-Donnxruntime_RUN_ONNX_TESTS=OFF
 		-Donnxruntime_USE_SYSTEM_CPUINFO=ON
-		-Donnxruntime_USE_DNNL=$(usex onednn)
-		-Donnxruntime_USE_SYSTEM_DNNL=$(usex onednn)
+		#-Donnxruntime_USE_DNNL=$(usex onednn)
+		#-Donnxruntime_USE_SYSTEM_DNNL=$(usex onednn)
 		-Donnxruntime_USE_XNNPACK=$(usex xnnpack)
 		-Donnxruntime_USE_SYSTEM_XNNPACK=$(usex xnnpack)
 		# The tree lacks upstream's patched CUTLASS 4.7.0 and DeepGEMM

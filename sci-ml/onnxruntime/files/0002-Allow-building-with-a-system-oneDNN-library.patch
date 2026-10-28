@@ -17,6 +17,8 @@ its SONAME filename on Unix when copying it into the Python package.
  cmake/onnxruntime_providers_dnnl.cmake |  5 ++++-
  3 files changed, 26 insertions(+), 1 deletion(-)
 
+https://github.com/microsoft/onnxruntime/pull/33593
+
 diff --git a/cmake/CMakeLists.txt b/cmake/CMakeLists.txt
 index 90143738f5..1f9d32d669 100644
 --- a/cmake/CMakeLists.txt

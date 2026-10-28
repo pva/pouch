@@ -3,7 +3,10 @@
 <pkgmetadata>
 	<!-- maintainer-needed -->
 	<use>
+		<!-- Disabled in the ebuild until the oneDNN EP passes its tests.
 		<flag name="onednn">Enable the oneDNN CPU execution provider</flag>
+		-->
+
 		<flag name="xnnpack">Enable the XNNPACK CPU execution provider</flag>
 	</use>
 	<upstream>

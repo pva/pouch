@@ -14,6 +14,8 @@ flags, include paths, and runtime libraries.
  cmake/onnxruntime_providers_dnnl.cmake | 2 ++
  1 file changed, 2 insertions(+)
 
+https://github.com/microsoft/onnxruntime/pull/33593
+
 diff --git a/cmake/onnxruntime_providers_dnnl.cmake b/cmake/onnxruntime_providers_dnnl.cmake
 index 07926a34d5..e5831c60ce 100644
 --- a/cmake/onnxruntime_providers_dnnl.cmake

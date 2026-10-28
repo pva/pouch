@@ -19,6 +19,8 @@ as static XNNPACK requires additional microkernel and platform dependencies.
  4 files changed, 54 insertions(+), 1 deletion(-)
  create mode 100644 cmake/external/onnxruntime_system_xnnpack.cmake
 
+https://github.com/microsoft/onnxruntime/pull/33593
+
 diff --git a/cmake/CMakeLists.txt b/cmake/CMakeLists.txt
 index 90143738f5..d7b2587c57 100644
 --- a/cmake/CMakeLists.txt

@@ -18,6 +18,8 @@ the install RPATH to $ORIGIN.
  cmake/onnxruntime_providers_dnnl.cmake | 6 +++++-
  1 file changed, 5 insertions(+), 1 deletion(-)
 
+https://github.com/microsoft/onnxruntime/pull/33582
+
 diff --git a/cmake/onnxruntime_providers_dnnl.cmake b/cmake/onnxruntime_providers_dnnl.cmake
 index 07926a34d5..59b2199d5c 100644
 --- a/cmake/onnxruntime_providers_dnnl.cmake

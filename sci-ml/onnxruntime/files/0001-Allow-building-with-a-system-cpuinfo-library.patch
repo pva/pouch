@@ -12,6 +12,8 @@ Keep the option disabled by default, preserving the existing behavior.
  cmake/external/onnxruntime_external_deps.cmake | 2 +-
  2 files changed, 2 insertions(+), 1 deletion(-)
 
+https://github.com/microsoft/onnxruntime/pull/33584
+
 diff --git a/cmake/CMakeLists.txt b/cmake/CMakeLists.txt
 index 90143738f5..9ff169d75e 100644
 --- a/cmake/CMakeLists.txt
