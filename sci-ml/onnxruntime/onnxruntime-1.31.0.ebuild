@@ -5,7 +5,7 @@ EAPI=8
 
 PYTHON_COMPAT=( python3_{11..14} )
 
-inherit cmake flag-o-matic python-any-r1
+inherit cmake flag-o-matic multiprocessing python-any-r1
 
 ONNX_PV=1.23.1
 
@@ -136,6 +136,14 @@ src_configure() {
 }
 
 src_test() {
+	# ORT pins default intra-op threads to cores reported by cpuinfo, which
+	# ignores the process CPU mask; under a restricted cpuset that fails with
+	# EINVAL. An explicit pool size disables the pinning. Split the available
+	# CPUs between the concurrently running test binaries.
+	local -x CTEST_JOBS=${CTEST_JOBS:-2}
+	local threads=$(( $(get_nproc) / CTEST_JOBS ))
+	local -x ORT_INTRA_OP_NUM_THREADS=${ORT_INTRA_OP_NUM_THREADS:-$(( threads > 4 ? threads : 4 ))}
+
 	# The ONNX runner accepts missing model corpora as successful empty runs.
 	local CMAKE_SKIP_TESTS=()
 	local corpus
