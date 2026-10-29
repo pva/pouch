@@ -66,6 +66,7 @@ PATCHES=(
 	"${FILESDIR}/${P}-flatc-args.patch"
 	"${FILESDIR}/${P}-system-gtest.patch"
 	"${FILESDIR}/${P}-nhwc-test-tolerance.patch"
+	"${FILESDIR}/${P}-test-uninitialized.patch"
 	"${FILESDIR}/0001-Allow-building-with-a-system-cpuinfo-library.patch"
 	#"${FILESDIR}/0001-Link-the-oneDNN-provider-explicitly-with-OpenMP.patch"
 	#"${FILESDIR}/0002-Allow-building-with-a-system-oneDNN-library.patch"
@@ -157,4 +158,12 @@ src_test() {
 		fi
 	done
 	cmake_src_test
+}
+
+src_install() {
+	cmake_src_install
+	# The test runner is only built and installed with the unit tests.
+	if use test; then
+		rm "${ED}"/usr/bin/onnx_test_runner || die
+	fi
 }

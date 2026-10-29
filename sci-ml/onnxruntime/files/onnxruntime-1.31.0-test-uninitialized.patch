@@ -1,0 +1,27 @@
+Silence -Wuninitialized in the unit tests.
+
+GCC 16 reports QDQOpKeys values returned by the constexpr GetQDQOpKeys() in
+onnxruntime/test/optimizer/qdq_transformer_test.cc as used uninitialized, and
+Portage lists them as severe warnings:
+
+  qdq_transformer_test.cc:3528:38: warning: 'qdq_keys.QDQOpKeys::quantize_linear' is used uninitialized [-Wuninitialized]
+  qdq_transformer_test.cc:3522:23: note: 'qdq_keys' declared here
+   3522 |       const QDQOpKeys qdq_keys = GetQDQOpKeys(false);
+
+The variable is initialized, and the same pattern warns in a small program
+outside ONNX Runtime, so this is a compiler false positive. Upstream already
+keeps the warning from failing the unit tests, but only when cross compiling,
+where HAS_NOERROR is set. The test programs are not installed, so turn the
+warning off for them.
+
+--- a/cmake/onnxruntime_unittests.cmake
++++ b/cmake/onnxruntime_unittests.cmake
+@@ -184,6 +184,8 @@
+     if (${HAS_NOERROR})
+       target_compile_options(${_UT_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CXX>:-Wno-error=uninitialized>")
+     endif()
++    # GCC reports false positives in the test code.
++    target_compile_options(${_UT_TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:CXX>:-Wno-uninitialized>")
+     onnxruntime_disable_gtest_character_conversion_as_error(${_UT_TARGET})
+   endif()
+ 
